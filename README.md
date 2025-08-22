@@ -24,7 +24,7 @@
 
 1. **Клонируйте репозиторий:**
 ```bash
-git clone https://github.com/your-username/farming-game.git
+git clone https://github.com/Antoged/farming-game.git
 cd farming-game
 ```
 
@@ -146,7 +146,7 @@ MIT License - см. файл [LICENSE](LICENSE)
 
 - 📧 Email: support@farming-game.com
 - 💬 Telegram: @farming_game_support
-- 🐛 Issues: [GitHub Issues](https://github.com/your-username/farming-game/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/Antoged/farming-game/issues)
 
 ## 🙏 Благодарности
 
