@@ -31,11 +31,12 @@ jobs:
         run: |
           mkdir -p docs
           cp README.md docs/
-          # Копируем Telegram Mini App версию
-          cp docs/telegram-app.html docs/
+          cp index.html docs/
+          cp telegram-app.html docs/
           cp CNAME docs/
           touch docs/.nojekyll
           
+          # Копируем статические файлы если они есть
           if [ -d "templates" ]; then
             cp -r templates docs/
           fi
@@ -43,6 +44,10 @@ jobs:
           if [ -d "static" ]; then
             cp -r static docs/
           fi
+          
+          # Создаем пустые файлы для корректной работы
+          echo "# Farming Game" > docs/index.html
+          echo "Redirecting to main app..." > docs/telegram-app.html
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
