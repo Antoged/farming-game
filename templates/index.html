@@ -670,7 +670,7 @@
                             <div class="plot-number">${i}</div>
                             <div class="seed-info">${seedName}</div>
                             <div class="harvest-ready">Готов к сбору!</div>
-                            <button class="btn harvest-btn" onclick="harvestPlot(${plot.id})">Собрать</button>
+                            <button class="btn harvest-btn" onclick="harvestPlot(${i})">Собрать</button>
                         </div>
                     `;
                 }
@@ -794,6 +794,9 @@
         }
 
         async function loadShop() {
+            const container = document.getElementById('shopItems');
+            container.innerHTML = '<div class="loading">Загрузка магазина...</div>';
+            
             try {
                 const response = await fetch('/api/shop');
                 const data = await response.json();
@@ -805,6 +808,13 @@
                 renderShop(data.items);
             } catch (error) {
                 console.error('Ошибка загрузки магазина:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h4>❌ Ошибка загрузки</h4>
+                        <p>Не удалось загрузить магазин</p>
+                        <button class="btn" onclick="loadShop()" style="margin-top: 15px;">🔄 Попробовать снова</button>
+                    </div>
+                `;
                 showMessage('Ошибка загрузки магазина', false);
             }
         }
@@ -814,7 +824,13 @@
             container.innerHTML = '';
 
             if (!items || items.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h4>Магазин пуст</h4><p>Попробуйте позже</p></div>';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h4>🛒 Магазин пуст</h4>
+                        <p>Магазин обновляется каждые 5 минут</p>
+                        <button class="btn" onclick="loadShop()" style="margin-top: 15px;">🔄 Обновить</button>
+                    </div>
+                `;
                 return;
             }
 
@@ -859,6 +875,9 @@
         }
 
         async function loadInventory() {
+            const container = document.getElementById('inventoryItems');
+            container.innerHTML = '<div class="loading">Загрузка инвентаря...</div>';
+            
             try {
                 const response = await fetch(`/api/inventory?user_id=${currentUser.user_id}`);
                 const data = await response.json();
@@ -870,6 +889,13 @@
                 renderInventory(data.items);
             } catch (error) {
                 console.error('Ошибка загрузки инвентаря:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h4>❌ Ошибка загрузки</h4>
+                        <p>Не удалось загрузить инвентарь</p>
+                        <button class="btn" onclick="loadInventory()" style="margin-top: 15px;">🔄 Попробовать снова</button>
+                    </div>
+                `;
                 showMessage('Ошибка загрузки инвентаря', false);
             }
         }
@@ -879,7 +905,13 @@
             container.innerHTML = '';
 
             if (!items || items.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h4>Инвентарь пуст</h4><p>Соберите урожай с фермы</p></div>';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h4>📦 Инвентарь пуст</h4>
+                        <p>Соберите урожай с фермы чтобы наполнить инвентарь</p>
+                        <button class="btn" onclick="switchToFarm()" style="margin-top: 15px;">🌱 Перейти к ферме</button>
+                    </div>
+                `;
                 return;
             }
 
@@ -890,7 +922,7 @@
                     <div class="item-info">
                         <div class="item-name">${getSeedName(item.item_type)}</div>
                         <div class="item-details">
-                            Вес: ${item.weight}g, Размер: ${item.size}cm<br>
+                            Вес: ${item.weight}г, Размер: ${item.size}см<br>
                             Качество: ${Math.round(item.quality * 100)}%
                         </div>
                     </div>
@@ -1041,6 +1073,16 @@
             loadWeather();
             loadShop();
             loadInventory();
+        }
+
+        // Вспомогательная функция для переключения на ферму
+        function switchToFarm() {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector('[data-tab="farm"]').classList.add('active');
+            document.getElementById('farm-tab').classList.add('active');
+            loadFarm();
         }
 
         // Автообновление каждые 30 секунд

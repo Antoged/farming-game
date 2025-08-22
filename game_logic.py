@@ -7,6 +7,7 @@ from config import SEEDS, WEATHER_EFFECTS, SHOP_REFRESH_INTERVAL, WEATHER_CHANGE
 class GameLogic:
     def __init__(self):
         self.db = Database()
+        self.init_shop()
     
     def calculate_harvest(self, seed_type, weather_multiplier=1.0):
         """Рассчитать урожай с учетом погоды"""
@@ -213,15 +214,26 @@ class GameLogic:
         current_time = datetime.now()
         available_until = current_time + timedelta(seconds=SHOP_REFRESH_INTERVAL)
         
-        for seed_type, seed_data in SEEDS.items():
-            # Шанс появления в магазине
-            if random.random() < seed_data['shop_chance']:
-                # Цена может варьироваться на ±20%
-                price_variation = random.uniform(0.8, 1.2)
+        # Всегда добавлять базовые семена
+        basic_seeds = ['carrot', 'tomato', 'potato']
+        for seed_type in basic_seeds:
+            if seed_type in SEEDS:
+                seed_data = SEEDS[seed_type]
+                price_variation = random.uniform(0.9, 1.1)
                 price = int(seed_data['base_price'] * price_variation)
-                
-                # Добавить в магазин
                 self.db.add_shop_item(seed_type, price, available_until)
+        
+        # Добавить остальные товары с шансом
+        for seed_type, seed_data in SEEDS.items():
+            if seed_type not in basic_seeds:
+                # Шанс появления в магазине
+                if random.random() < seed_data['shop_chance']:
+                    # Цена может варьироваться на ±20%
+                    price_variation = random.uniform(0.8, 1.2)
+                    price = int(seed_data['base_price'] * price_variation)
+                    
+                    # Добавить в магазин
+                    self.db.add_shop_item(seed_type, price, available_until)
     
     def change_weather(self):
         """Изменить погоду"""
@@ -244,6 +256,35 @@ class GameLogic:
         self.db.set_weather(weather_type, weather_data['price_multiplier'], ends_at)
         
         return weather_type, weather_data
+    
+    def init_shop(self):
+        """Инициализировать магазин с базовыми товарами"""
+        # Очистить старые товары
+        self.db.clear_expired_shop_items()
+        
+        # Проверить, есть ли товары в магазине
+        shop_items = self.db.get_shop_items()
+        
+        if len(shop_items) < 3:  # Если меньше 3 товаров, добавить базовые
+            # Добавить базовые товары
+            from datetime import datetime, timedelta
+            current_time = datetime.now()
+            available_until = current_time + timedelta(seconds=SHOP_REFRESH_INTERVAL)
+            
+            # Добавить несколько базовых семян
+            basic_seeds = ['carrot', 'tomato', 'potato']
+            for seed_type in basic_seeds:
+                if seed_type in SEEDS:
+                    # Проверить, нет ли уже такого товара
+                    existing = any(item['seed_type'] == seed_type for item in shop_items)
+                    if not existing:
+                        seed_data = SEEDS[seed_type]
+                        # Небольшая вариация цены
+                        import random
+                        price_variation = random.uniform(0.9, 1.1)
+                        price = int(seed_data['base_price'] * price_variation)
+                        
+                        self.db.add_shop_item(seed_type, price, available_until)
     
     def get_player_stats(self, user_id):
         """Получить статистику игрока"""

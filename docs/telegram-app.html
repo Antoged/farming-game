@@ -245,13 +245,12 @@
         tg.ready();
         tg.expand();
 
-        // Получение user_id из URL параметров
+        // Получение user_id из URL параметров или установка демо-значения
         const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('user_id');
-
-        if (!userId) {
-            document.body.innerHTML = '<div class="error">Ошибка: не найден user_id</div>';
-        }
+        const userId = urlParams.get('user_id') || '12345';
+        
+        // Флаг для определения, работаем ли мы в демо-режиме
+        const isDemoMode = !urlParams.get('user_id') || window.location.hostname === 'antoged.github.io';
 
         let currentTab = 'farm';
 
@@ -287,15 +286,53 @@
             }
         }
 
+        // Mock данные для демонстрации
+        const mockData = {
+            farm: {
+                plots: [
+                    { status: 'empty' },
+                    { status: 'planted', timeLeft: 45, seedType: 'carrot' },
+                    { status: 'ready', seedType: 'tomato' },
+                    { status: 'empty' },
+                    { status: 'planted', timeLeft: 120, seedType: 'potato' },
+                    { status: 'empty' }
+                ]
+            },
+            shop: {
+                items: [
+                    { seed_type: 'carrot', name: 'Морковь', emoji: '🥕', price: 10 },
+                    { seed_type: 'tomato', name: 'Помидор', emoji: '🍅', price: 25 },
+                    { seed_type: 'potato', name: 'Картошка', emoji: '🥔', price: 15 },
+                    { seed_type: 'cucumber', name: 'Огурец', emoji: '🥒', price: 20 }
+                ]
+            },
+            inventory: {
+                items: [
+                    { id: 1, item_type: 'carrot', name: 'Морковь', emoji: '🥕', price: 15, weight: 120, size: 18 },
+                    { id: 2, item_type: 'tomato', name: 'Помидор', emoji: '🍅', price: 35, weight: 180, size: 25 }
+                ]
+            },
+            stats: { money: 150, level: 2, inventory_count: 2 },
+            weather: { type: 'sunny', name: 'Солнечно', emoji: '☀️' }
+        };
+
         // Загрузка фермы
         async function loadFarm() {
             try {
-                const response = await fetch(`/api/farm?user_id=${userId}`);
-                const farmData = await response.json();
+                let farmData;
                 
-                if (farmData.error) {
-                    document.getElementById('farm-grid').innerHTML = `<div class="error">${farmData.error}</div>`;
-                    return;
+                if (isDemoMode) {
+                    // Используем mock данные
+                    farmData = mockData.farm;
+                } else {
+                    // Реальный API запрос
+                    const response = await fetch(`/api/farm?user_id=${userId}`);
+                    farmData = await response.json();
+                    
+                    if (farmData.error) {
+                        document.getElementById('farm-grid').innerHTML = `<div class="error">${farmData.error}</div>`;
+                        return;
+                    }
                 }
                 
                 const farmGrid = document.getElementById('farm-grid');
@@ -318,21 +355,32 @@
                     plotElement.innerHTML = `
                         <div class="plot-info">
                             ${plotContent}
-                            ${plot.status === 'planted' ? `<br><small>${plot.timeLeft}s</small>` : ''}
+                            ${plot.status === 'planted' ? `<br><small>${plot.timeLeft || 0}s</small>` : ''}
                         </div>
                     `;
                     
                     farmGrid.appendChild(plotElement);
                 });
             } catch (error) {
-                document.getElementById('farm-grid').innerHTML = '<div class="error">Ошибка загрузки фермы</div>';
+                console.error('Ошибка загрузки фермы:', error);
+                // В случае ошибки показываем демо-данные
+                loadFarm = () => loadFarm.call(this);
+                isDemoMode = true;
+                loadFarm();
             }
         }
 
         // Обработка клика по участку
         async function handlePlotClick(plotId) {
             try {
-                const plots = await fetch(`/api/farm?user_id=${userId}`).then(r => r.json());
+                let plots;
+                
+                if (isDemoMode) {
+                    plots = { plots: mockData.farm.plots };
+                } else {
+                    plots = await fetch(`/api/farm?user_id=${userId}`).then(r => r.json());
+                }
+                
                 const plot = plots.plots[plotId];
                 
                 if (plot.status === 'empty') {
@@ -361,6 +409,22 @@
         // Посадка семян
         async function plantSeed(plotId, seedType) {
             try {
+                if (isDemoMode) {
+                    // Демо-режим: обновляем mock данные
+                    if (mockData.farm.plots[plotId].status === 'empty') {
+                        mockData.farm.plots[plotId] = {
+                            status: 'planted',
+                            seedType: seedType,
+                            timeLeft: 60 // 1 минута для демо
+                        };
+                        tg.showAlert('🌱 Семена посажены! (Демо-режим)');
+                        loadFarm();
+                    } else {
+                        tg.showAlert('❌ Участок уже занят');
+                    }
+                    return;
+                }
+                
                 const response = await fetch('/api/plant', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -386,6 +450,38 @@
         // Сбор урожая
         async function harvestPlot(plotId) {
             try {
+                if (isDemoMode) {
+                    // Демо-режим: обновляем mock данные
+                    if (mockData.farm.plots[plotId].status === 'ready') {
+                        const seedType = mockData.farm.plots[plotId].seedType || 'carrot';
+                        
+                        // Очищаем участок
+                        mockData.farm.plots[plotId] = { status: 'empty' };
+                        
+                        // Добавляем в инвентарь
+                        const newItem = {
+                            id: Date.now(),
+                            item_type: seedType,
+                            name: mockData.shop.items.find(i => i.seed_type === seedType)?.name || 'Урожай',
+                            emoji: mockData.shop.items.find(i => i.seed_type === seedType)?.emoji || '🌱',
+                            price: Math.floor(Math.random() * 30) + 15,
+                            weight: Math.floor(Math.random() * 100) + 50,
+                            size: Math.floor(Math.random() * 20) + 10
+                        };
+                        
+                        mockData.inventory.items.push(newItem);
+                        mockData.stats.inventory_count = mockData.inventory.items.length;
+                        mockData.stats.money += 5; // Бонус за сбор
+                        
+                        tg.showAlert('🌾 Урожай собран! (Демо-режим)');
+                        loadFarm();
+                        updateStats();
+                    } else {
+                        tg.showAlert('❌ Урожай не готов');
+                    }
+                    return;
+                }
+                
                 const response = await fetch('/api/harvest', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -411,8 +507,16 @@
         // Загрузка магазина
         async function loadShop() {
             try {
-                const response = await fetch('/api/shop');
-                const shopData = await response.json();
+                let shopData;
+                
+                if (isDemoMode) {
+                    // Используем mock данные
+                    shopData = mockData.shop;
+                } else {
+                    // Реальный API запрос
+                    const response = await fetch('/api/shop');
+                    shopData = await response.json();
+                }
                 
                 const shopItems = document.getElementById('shop-items');
                 shopItems.innerHTML = '';
@@ -423,11 +527,12 @@
                     itemElement.innerHTML = `
                         <div>${item.emoji} ${item.name}</div>
                         <div>💰 ${item.price}</div>
-                        <button onclick="buySeed('${item.type}')">Купить</button>
+                        <button onclick="buySeed('${item.seed_type}')">Купить</button>
                     `;
                     shopItems.appendChild(itemElement);
                 });
             } catch (error) {
+                console.error('Ошибка загрузки магазина:', error);
                 document.getElementById('shop-items').innerHTML = '<div class="error">Ошибка загрузки магазина</div>';
             }
         }
@@ -435,6 +540,12 @@
         // Покупка семян
         async function buySeed(seedType) {
             try {
+                if (isDemoMode) {
+                    // Демо-режим: просто показываем сообщение
+                    tg.showAlert('🌱 Семена куплены! (Демо-режим)');
+                    return;
+                }
+                
                 const response = await fetch('/api/buy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -459,12 +570,20 @@
         // Загрузка инвентаря
         async function loadInventory() {
             try {
-                const response = await fetch(`/api/inventory?user_id=${userId}`);
-                const inventoryData = await response.json();
+                let inventoryData;
                 
-                if (inventoryData.error) {
-                    document.getElementById('inventory-items').innerHTML = `<div class="error">${inventoryData.error}</div>`;
-                    return;
+                if (isDemoMode) {
+                    // Используем mock данные
+                    inventoryData = mockData.inventory;
+                } else {
+                    // Реальный API запрос
+                    const response = await fetch(`/api/inventory?user_id=${userId}`);
+                    inventoryData = await response.json();
+                    
+                    if (inventoryData.error) {
+                        document.getElementById('inventory-items').innerHTML = `<div class="error">${inventoryData.error}</div>`;
+                        return;
+                    }
                 }
                 
                 const inventoryItems = document.getElementById('inventory-items');
@@ -481,12 +600,13 @@
                     itemElement.innerHTML = `
                         <div>${item.emoji} ${item.name}</div>
                         <div>💰 ${item.price}</div>
-                        <div>📏 ${item.weight}g, ${item.size}cm</div>
+                        <div>📏 ${item.weight}г, ${item.size}см</div>
                         <button onclick="sellItem(${item.id})">Продать</button>
                     `;
                     inventoryItems.appendChild(itemElement);
                 });
             } catch (error) {
+                console.error('Ошибка загрузки инвентаря:', error);
                 document.getElementById('inventory-items').innerHTML = '<div class="error">Ошибка загрузки инвентаря</div>';
             }
         }
@@ -494,6 +614,18 @@
         // Продажа предмета
         async function sellItem(itemId) {
             try {
+                if (isDemoMode) {
+                    // Демо-режим: удаляем предмет из mock данных
+                    mockData.inventory.items = mockData.inventory.items.filter(item => item.id !== itemId);
+                    mockData.stats.money += 20; // Добавляем деньги
+                    mockData.stats.inventory_count = mockData.inventory.items.length;
+                    
+                    tg.showAlert('💰 Предмет продан! (Демо-режим)');
+                    loadInventory();
+                    updateStats();
+                    return;
+                }
+                
                 const response = await fetch('/api/sell', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -519,22 +651,42 @@
         // Обновление статистики
         async function updateStats() {
             try {
-                const response = await fetch(`/api/stats?user_id=${userId}`);
-                const stats = await response.json();
+                let stats;
                 
-                document.getElementById('money').textContent = stats.money;
-                document.getElementById('level').textContent = stats.level;
-                document.getElementById('inventory-count').textContent = stats.inventory_count;
+                if (isDemoMode) {
+                    // Используем mock данные
+                    stats = mockData.stats;
+                } else {
+                    // Реальный API запрос
+                    const response = await fetch(`/api/stats?user_id=${userId}`);
+                    stats = await response.json();
+                }
+                
+                document.getElementById('money').textContent = stats.money || 100;
+                document.getElementById('level').textContent = stats.level || 1;
+                document.getElementById('inventory-count').textContent = stats.inventory_count || 0;
             } catch (error) {
                 console.error('Ошибка обновления статистики:', error);
+                // Показываем базовые значения в случае ошибки
+                document.getElementById('money').textContent = '100';
+                document.getElementById('level').textContent = '1';
+                document.getElementById('inventory-count').textContent = '0';
             }
         }
 
         // Обновление погоды
         async function updateWeather() {
             try {
-                const response = await fetch('/api/weather');
-                const weather = await response.json();
+                let weather;
+                
+                if (isDemoMode) {
+                    // Используем mock данные
+                    weather = mockData.weather;
+                } else {
+                    // Реальный API запрос
+                    const response = await fetch('/api/weather');
+                    weather = await response.json();
+                }
                 
                 const emoji = {
                     'sunny': '☀️',
@@ -544,10 +696,13 @@
                     'normal': '🌤️'
                 }[weather.type] || '🌤️';
                 
-                document.getElementById('weather-emoji').textContent = emoji;
-                document.getElementById('weather-text').textContent = weather.name;
+                document.getElementById('weather-emoji').textContent = weather.emoji || emoji;
+                document.getElementById('weather-text').textContent = weather.name || 'Обычная погода';
             } catch (error) {
                 console.error('Ошибка обновления погоды:', error);
+                // Показываем базовые значения в случае ошибки
+                document.getElementById('weather-emoji').textContent = '🌤️';
+                document.getElementById('weather-text').textContent = 'Обычная погода';
             }
         }
 

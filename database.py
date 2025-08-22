@@ -436,8 +436,7 @@ class Database:
             # Удалить товар из магазина
             cursor.execute('''
                 DELETE FROM shop_items 
-                WHERE seed_type = ? AND price = ? 
-                LIMIT 1
+                WHERE id = (SELECT id FROM shop_items WHERE seed_type = ? AND price = ? LIMIT 1)
             ''', (seed_type, price))
             
             conn.commit()
