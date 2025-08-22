@@ -3,10 +3,7 @@ from flask_cors import CORS
 import json
 import os
 from game_logic import GameLogic
-try:
-    from config_local import SEEDS, WEATHER_EFFECTS
-except ImportError:
-    from config import SEEDS, WEATHER_EFFECTS
+from config import SEEDS, WEATHER_EFFECTS
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -182,8 +179,9 @@ def get_player():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Веб-приложение работает только через GitHub Pages
-# Используйте: https://antoged.github.io/farming-game/
+# Веб-приложение работает через GitHub Pages
+# Основной URL: https://antoged.github.io/farming-game/
+# Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html
 # Для тестирования можно временно запустить локально
 if __name__ == '__main__':
     import sys
@@ -193,5 +191,6 @@ if __name__ == '__main__':
     else:
         print("⚠️  Веб-приложение доступно только через GitHub Pages:")
         print("🌐 https://antoged.github.io/farming-game/")
+        print("📱 Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html")
         print("❌ Локальный сервер отключен для безопасности")
         print("💡 Для тестирования: python webapp.py --test")

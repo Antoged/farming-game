@@ -1,5 +1,7 @@
 """
 Тесты для игровой логики
+Основной URL игры: https://antoged.github.io/farming-game/
+Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html
 """
 
 import pytest
@@ -160,4 +162,6 @@ class TestGameLogic:
 
 
 if __name__ == "__main__":
+    print("🌐 Основной URL игры: https://antoged.github.io/farming-game/")
+    print("📱 Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html")
     pytest.main([__file__])

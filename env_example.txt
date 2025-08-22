@@ -1,8 +1,31 @@
-# Telegram Bot Token (получите у @BotFather)
-BOT_TOKEN=your_bot_token_here
+# Конфигурация для фермерской игры
+# Скопируйте этот файл в .env и заполните своими значениями
 
-# URL вашего веб-приложения
+# Telegram Bot Token (получите у @BotFather)
+BOT_TOKEN=your_telegram_bot_token_here
+
+# URL веб-приложения (GitHub Pages)
 WEBAPP_URL=https://antoged.github.io/farming-game/
 
+# Секретный ключ для Flask (сгенерируйте случайный)
+SECRET_KEY=your_secret_key_here
+
+# Режим отладки (True для разработки, False для продакшена)
+DEBUG=False
+
 # Настройки базы данных
-DATABASE_PATH=farm_game.db
+DATABASE_URL=sqlite:///farm_game.db
+
+# Настройки сервера
+HOST=0.0.0.0
+PORT=5000
+
+# Настройки логирования
+LOG_LEVEL=INFO
+LOG_FILE=logs/app.log
+
+# Настройки безопасности
+ALLOWED_HOSTS=antoged.github.io
+
+# Настройки Telegram Web App
+TELEGRAM_WEBAPP_URL=https://antoged.github.io/farming-game/telegram-app.html

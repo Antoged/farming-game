@@ -512,9 +512,20 @@
         let selectedPlot = null;
         let currentTab = 'farm';
 
-        // Инициализация
-        tg.ready();
-        tg.expand();
+        // Инициализация Telegram Web App
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            
+            // Настройка темы
+            document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#ffffff');
+            document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#000000');
+            document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color || '#999999');
+            document.documentElement.style.setProperty('--tg-theme-link-color', tg.themeParams.link_color || '#2481cc');
+            document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#2481cc');
+            document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color || '#ffffff');
+            document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', tg.themeParams.secondary_bg_color || '#f0f0f0');
+        }
 
         // Переключение вкладок
         document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -543,19 +554,30 @@
         // Инициализация игры
         async function initGame() {
             try {
-                // Получить user_id из URL или сгенерировать для браузера
-                const urlParams = new URLSearchParams(window.location.search);
-                let userId = urlParams.get('user_id');
+                // Инициализация Telegram Web App
+                let tg = window.Telegram.WebApp;
+                let userId = null;
                 
-                // Если нет user_id (открыто в браузере), создаем/получаем из localStorage
-                if (!userId) {
-                    userId = localStorage.getItem('farming_user_id');
+                if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    // Пользователь из Telegram
+                    const user = tg.initDataUnsafe.user;
+                    userId = user.id.toString();
+                    console.log('Пользователь Telegram:', user);
+                } else {
+                    // Получить user_id из URL или сгенерировать для браузера
+                    const urlParams = new URLSearchParams(window.location.search);
+                    userId = urlParams.get('user_id');
+                    
+                    // Если нет user_id (открыто в браузере), создаем/получаем из localStorage
                     if (!userId) {
-                        // Генерируем случайный ID для браузерной игры
-                        userId = 'browser_' + Math.random().toString(36).substr(2, 9) + Date.now();
-                        localStorage.setItem('farming_user_id', userId);
-                        console.log('Создан новый ID для браузерной игры:', userId);
-                        showMessage('🌾 Добро пожаловать в браузерную версию игры!', true);
+                        userId = localStorage.getItem('farming_user_id');
+                        if (!userId) {
+                            // Генерируем случайный ID для браузерной игры
+                            userId = 'browser_' + Math.random().toString(36).substr(2, 9) + Date.now();
+                            localStorage.setItem('farming_user_id', userId);
+                            console.log('Создан новый ID для браузерной игры:', userId);
+                            showMessage('🌾 Добро пожаловать в браузерную версию игры!', true);
+                        }
                     }
                 }
                 

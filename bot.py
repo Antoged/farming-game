@@ -1,11 +1,12 @@
+# Telegram бот для фермерской игры
+# Основной URL игры: https://antoged.github.io/farming-game/
+# Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html
+
 import asyncio
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-try:
-    from config_local import BOT_TOKEN, WEBAPP_URL, SEEDS, WEATHER_EFFECTS
-except ImportError:
-    from config import BOT_TOKEN, WEBAPP_URL, SEEDS, WEATHER_EFFECTS
+from config import BOT_TOKEN, WEBAPP_URL, SEEDS, WEATHER_EFFECTS
 from game_logic import GameLogic
 import threading
 import time
@@ -191,6 +192,8 @@ def main() -> None:
     
     # Запустить бота
     print("🌾 Фермерская игра запущена!")
+    print("🌐 Веб-приложение: https://antoged.github.io/farming-game/")
+    print("📱 Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html")
     application.run_polling()
 
 if __name__ == '__main__':

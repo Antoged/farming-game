@@ -34,6 +34,7 @@ def main():
     
     # Показать информацию о веб-приложении
     run_webapp()
+    print("📱 Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html")
     print()
     
     # Проверка зависимостей

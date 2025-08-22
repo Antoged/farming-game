@@ -4,17 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "farming-game"
-version = "1.0.0"
-description = "Интерактивная фермерская игра в Telegram с веб-интерфейсом"
+version = "2.0.0"
+description = "Полнофункциональная браузерная игра-ферма с системой посадки, выращивания и сбора урожая"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Antoged", email = "anton.gedziun@gmail.com"}
 ]
+keywords = ["game", "farming", "browser", "telegram", "mini-app"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -25,29 +27,26 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "flask>=2.3.0",
-    "python-telegram-bot>=20.0",
-    "python-dotenv>=1.0.0",
+    "Flask>=2.3.0",
+    "Flask-CORS>=4.0.0",
     "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4.3",
+    "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
-    "pytest-mock>=3.12.0",
     "black>=23.11.0",
     "flake8>=6.1.0",
-    "mypy>=1.7.1",
-    "pre-commit>=3.6.0",
-    "coverage>=7.3.2",
+    "mypy>=1.7.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-username/farming-game"
-Documentation = "https://github.com/your-username/farming-game#readme"
-Repository = "https://github.com/your-username/farming-game.git"
-"Bug Tracker" = "https://github.com/your-username/farming-game/issues"
+Homepage = "https://antoged.github.io/farming-game/"
+Repository = "https://github.com/antoged/farming-game"
+Documentation = "https://antoged.github.io/farming-game/"
+"Bug Tracker" = "https://github.com/antoged/farming-game/issues"
 
 [tool.black]
 line-length = 88
@@ -66,6 +65,18 @@ extend-exclude = '''
   | dist
 )/
 '''
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    "venv",
+]
 
 [tool.mypy]
 python_version = "3.8"
@@ -90,10 +101,9 @@ python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=.",
+    "--cov=farming_game",
     "--cov-report=term-missing",
     "--cov-report=html",
-    "--cov-report=xml",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",

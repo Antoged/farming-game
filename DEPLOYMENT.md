@@ -1,443 +1,281 @@
-# 🚀 Руководство по развертыванию
+# 🚀 Деплой фермерской игры
 
-Подробные инструкции по развертыванию Фермерской игры на различных платформах.
+Инструкции по развертыванию игры на различных платформах.
 
-## 📋 Предварительные требования
+## 🌐 GitHub Pages (Основной способ)
 
-- Python 3.8+
-- Git
-- Telegram Bot Token
-- Веб-сервер или хостинг-платформа
+### Автоматический деплой
+1. **Настройте GitHub Pages:**
+   - Перейдите в Settings → Pages
+   - Source: Deploy from a branch
+   - Branch: main
+   - Folder: /docs
 
-## 🏠 Локальная разработка
+2. **Структура файлов:**
+   ```
+   docs/
+   ├── index.html          # Основная игра
+   ├── telegram-app.html   # Telegram Mini App
+   └── CNAME              # Домен antoged.github.io
+   ```
 
-### 1. Клонирование и настройка
+3. **Деплой:**
+   ```bash
+   git add .
+   git commit -m "Обновление игры"
+   git push origin main
+   ```
+   Игра автоматически обновится через несколько минут.
 
+### Ручной деплой
 ```bash
-# Клонируйте репозиторий
-git clone https://github.com/your-username/farming-game.git
-cd farming-game
+# Обновите файлы в папке docs/
+cp templates/index.html docs/index.html
+cp templates/telegram-app.html docs/telegram-app.html
 
-# Создайте виртуальное окружение
-python -m venv venv
-
-# Активируйте виртуальное окружение
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
-# Установите зависимости
-pip install -r requirements.txt
+# Запушьте изменения
+git add docs/
+git commit -m "Обновление GitHub Pages"
+git push origin main
 ```
 
-### 2. Настройка переменных окружения
+## 🐳 Docker
 
-```bash
-# Скопируйте пример конфигурации
-cp env_example.txt .env
+### Создание образа
+```dockerfile
+FROM python:3.9-slim
 
-# Отредактируйте .env файл
-nano .env
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+EXPOSE 5000
+
+CMD ["python", "webapp.py"]
 ```
 
-Содержимое `.env`:
-```env
-BOT_TOKEN=your_telegram_bot_token_here
-WEBAPP_URL=https://your-domain.com
+### Запуск
+```bash
+# Сборка
+docker build -t farming-game .
+
+# Запуск
+docker run -p 5000:5000 farming-game
 ```
 
-### 3. Запуск для разработки
+## ☁️ Heroku
 
+### 1. Создайте приложение
 ```bash
-# Запуск всех компонентов
-python run.py
-
-# Или запуск отдельных компонентов
-python webapp.py  # Веб-приложение
-python bot.py     # Telegram бот
+heroku create your-farming-game
 ```
 
-## 🌐 Развертывание на VPS
-
-### 1. Подготовка сервера
-
+### 2. Настройте переменные окружения
 ```bash
-# Обновление системы
-sudo apt update && sudo apt upgrade -y
-
-# Установка необходимых пакетов
-sudo apt install python3 python3-pip python3-venv nginx git -y
-
-# Создание пользователя для приложения
-sudo adduser farming
-sudo usermod -aG sudo farming
+heroku config:set BOT_TOKEN=your_telegram_bot_token
+heroku config:set WEBAPP_URL=https://your-app.herokuapp.com
 ```
 
-### 2. Клонирование и настройка приложения
-
+### 3. Деплой
 ```bash
-# Переключение на пользователя
-sudo su - farming
+git push heroku main
+```
 
-# Клонирование репозитория
-git clone https://github.com/your-username/farming-game.git
-cd farming-game
+### 4. Откройте приложение
+```bash
+heroku open
+```
 
-# Создание виртуального окружения
+## 🐧 VPS/Сервер
+
+### 1. Установите зависимости
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install python3 python3-pip python3-venv nginx
+
+# CentOS/RHEL
+sudo yum install python3 python3-pip nginx
+```
+
+### 2. Настройте Python окружение
+```bash
 python3 -m venv venv
 source venv/bin/activate
-
-# Установка зависимостей
 pip install -r requirements.txt
-
-# Настройка переменных окружения
-cp env_example.txt .env
-nano .env
 ```
 
-### 3. Настройка Nginx
+### 3. Настройте systemd сервис
+```ini
+# /etc/systemd/system/farming-game.service
+[Unit]
+Description=Farming Game
+After=network.target
 
-```bash
-# Создание конфигурации Nginx
-sudo nano /etc/nginx/sites-available/farming-game
+[Service]
+User=www-data
+WorkingDirectory=/var/www/farming-game
+Environment=PATH=/var/www/farming-game/venv/bin
+ExecStart=/var/www/farming-game/venv/bin/python webapp.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-Содержимое конфигурации:
+### 4. Настройте Nginx
 ```nginx
+# /etc/nginx/sites-available/farming-game
 server {
     listen 80;
     server_name your-domain.com;
 
     location / {
-        proxy_pass http://127.0.0.1:5000;
+        proxy_pass https://antoged.github.io/farming-game/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /static {
-        alias /home/farming/farming-game/static;
-        expires 30d;
     }
 }
 ```
 
+### 5. Запустите сервисы
 ```bash
-# Активация сайта
-sudo ln -s /etc/nginx/sites-available/farming-game /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
+sudo systemctl enable farming-game
+sudo systemctl start farming-game
+sudo systemctl enable nginx
+sudo systemctl start nginx
 ```
 
-### 4. Настройка systemd
+## 🔒 HTTPS с Let's Encrypt
 
+### 1. Установите Certbot
 ```bash
-# Создание сервиса для бота
-sudo nano /etc/systemd/system/farming-bot.service
+sudo apt install certbot python3-certbot-nginx
 ```
 
-Содержимое сервиса:
-```ini
-[Unit]
-Description=Farming Game Bot
-After=network.target
-
-[Service]
-Type=simple
-User=farming
-WorkingDirectory=/home/farming/farming-game
-Environment=PATH=/home/farming/farming-game/venv/bin
-ExecStart=/home/farming/farming-game/venv/bin/python bot.py
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
+### 2. Получите сертификат
 ```bash
-# Создание сервиса для веб-приложения
-sudo nano /etc/systemd/system/farming-web.service
-```
-
-Содержимое сервиса:
-```ini
-[Unit]
-Description=Farming Game Web App
-After=network.target
-
-[Service]
-Type=simple
-User=farming
-WorkingDirectory=/home/farming/farming-game
-Environment=PATH=/home/farming/farming-game/venv/bin
-ExecStart=/home/farming/farming-game/venv/bin/python webapp.py
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-### 5. Запуск сервисов
-
-```bash
-# Включение и запуск сервисов
-sudo systemctl enable farming-bot
-sudo systemctl enable farming-web
-sudo systemctl start farming-bot
-sudo systemctl start farming-web
-
-# Проверка статуса
-sudo systemctl status farming-bot
-sudo systemctl status farming-web
-```
-
-### 6. Настройка SSL (Let's Encrypt)
-
-```bash
-# Установка Certbot
-sudo apt install certbot python3-certbot-nginx -y
-
-# Получение SSL сертификата
 sudo certbot --nginx -d your-domain.com
+```
 
-# Настройка автоматического обновления
+### 3. Автообновление
+```bash
 sudo crontab -e
 # Добавьте строку:
-# 0 12 * * * /usr/bin/certbot renew --quiet
+0 12 * * * /usr/bin/certbot renew --quiet
 ```
 
-## ☁️ Развертывание на Heroku
+## 📱 Telegram Mini App
 
-### 1. Подготовка
+### 1. Настройте бота через @BotFather
+```
+/newapp
+Выберите бота
+Укажите название: Фермерская игра
+Укажите описание: Игра-ферма с посадкой и сбором урожая
+Укажите URL: https://antoged.github.io/farming-game/
+```
 
+### 2. Проверьте настройки
 ```bash
-# Установка Heroku CLI
-# Скачайте с https://devcenter.heroku.com/articles/heroku-cli
-
-# Вход в Heroku
-heroku login
+# Тест Mini App
+curl "https://api.telegram.org/bot<BOT_TOKEN>/getWebAppInfo"
 ```
 
-### 2. Создание приложения
+## 🔧 Переменные окружения
 
+### Основные настройки
 ```bash
-# Создание приложения на Heroku
-heroku create your-farming-game
-
-# Добавление переменных окружения
-heroku config:set BOT_TOKEN=your_bot_token
-heroku config:set WEBAPP_URL=https://your-farming-game.herokuapp.com
+# .env файл
+BOT_TOKEN=your_telegram_bot_token
+WEBAPP_URL=https://your-domain.com
+SECRET_KEY=your_secret_key
+DEBUG=False
 ```
 
-### 3. Настройка Procfile
-
-Создайте файл `Procfile`:
-```
-web: python webapp.py
-worker: python bot.py
-```
-
-### 4. Развертывание
-
+### Настройки базы данных
 ```bash
-# Отправка кода на Heroku
-git push heroku main
-
-# Запуск воркера для бота
-heroku ps:scale worker=1
+DATABASE_URL=sqlite:///farm_game.db
+# или для PostgreSQL:
+DATABASE_URL=postgresql://user:password@your-database-host/farming_game
 ```
 
-## 🐳 Развертывание с Docker
+## 📊 Мониторинг
 
-### 1. Создание Dockerfile
-
-```dockerfile
-FROM python:3.9-slim
-
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-
-EXPOSE 5000
-
-CMD ["python", "run.py"]
-```
-
-### 2. Создание docker-compose.yml
-
-```yaml
-version: '3.8'
-
-services:
-  farming-game:
-    build: .
-    ports:
-      - "5000:5000"
-    environment:
-      - BOT_TOKEN=${BOT_TOKEN}
-      - WEBAPP_URL=${WEBAPP_URL}
-    volumes:
-      - ./farm_game.db:/app/farm_game.db
-    restart: unless-stopped
-```
-
-### 3. Запуск с Docker
-
+### Логи
 ```bash
-# Сборка и запуск
-docker-compose up -d
+# Systemd
+sudo journalctl -u farming-game -f
 
-# Просмотр логов
-docker-compose logs -f
+# Nginx
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
 ```
 
-## 🔧 Настройка мониторинга
-
-### 1. Логирование
-
+### Статус сервисов
 ```bash
-# Создание папки для логов
-mkdir -p logs
-
-# Настройка ротации логов
-sudo nano /etc/logrotate.d/farming-game
-```
-
-Содержимое:
-```
-/home/farming/farming-game/logs/*.log {
-    daily
-    missingok
-    rotate 7
-    compress
-    delaycompress
-    notifempty
-    create 644 farming farming
-}
-```
-
-### 2. Мониторинг с помощью systemd
-
-```bash
-# Просмотр логов сервисов
-sudo journalctl -u farming-bot -f
-sudo journalctl -u farming-web -f
-
-# Проверка статуса
-sudo systemctl status farming-bot
-sudo systemctl status farming-web
-```
-
-## 🔒 Безопасность
-
-### 1. Настройка файрвола
-
-```bash
-# Установка UFW
-sudo apt install ufw
-
-# Настройка правил
-sudo ufw allow ssh
-sudo ufw allow 80
-sudo ufw allow 443
-sudo ufw enable
-```
-
-### 2. Обновления безопасности
-
-```bash
-# Автоматические обновления безопасности
-sudo apt install unattended-upgrades
-sudo dpkg-reconfigure -plow unattended-upgrades
-```
-
-## 📊 Резервное копирование
-
-### 1. Автоматическое резервное копирование
-
-```bash
-# Создание скрипта резервного копирования
-nano backup.sh
-```
-
-Содержимое:
-```bash
-#!/bin/bash
-BACKUP_DIR="/home/farming/backups"
-DATE=$(date +%Y%m%d_%H%M%S)
-
-mkdir -p $BACKUP_DIR
-cp /home/farming/farming-game/farm_game.db $BACKUP_DIR/farm_game_$DATE.db
-cp /home/farming/farming-game/.env $BACKUP_DIR/env_$DATE.backup
-
-# Удаление старых резервных копий (старше 30 дней)
-find $BACKUP_DIR -name "*.db" -mtime +30 -delete
-find $BACKUP_DIR -name "*.backup" -mtime +30 -delete
-```
-
-```bash
-# Делаем скрипт исполняемым
-chmod +x backup.sh
-
-# Добавляем в cron (ежедневно в 2:00)
-crontab -e
-# Добавьте строку:
-# 0 2 * * * /home/farming/farming-game/backup.sh
+sudo systemctl status farming-game
+sudo systemctl status nginx
 ```
 
 ## 🚨 Устранение неполадок
 
-### Частые проблемы
-
-1. **Бот не отвечает**
-   - Проверьте токен в `.env`
-   - Убедитесь, что бот запущен: `sudo systemctl status farming-bot`
-
-2. **Веб-приложение недоступно**
-   - Проверьте статус: `sudo systemctl status farming-web`
-   - Проверьте логи: `sudo journalctl -u farming-web -f`
-
-3. **Проблемы с базой данных**
-   - Проверьте права доступа к файлу БД
-   - Создайте резервную копию перед изменениями
-
-4. **Проблемы с SSL**
-   - Проверьте конфигурацию Nginx
-   - Обновите сертификат: `sudo certbot renew`
-
-### Полезные команды
-
+### Проблемы с портами
 ```bash
-# Перезапуск всех сервисов
-sudo systemctl restart farming-bot farming-web nginx
-
-# Просмотр логов в реальном времени
-sudo journalctl -u farming-bot -f
-sudo journalctl -u farming-web -f
-
-# Проверка портов
+# Проверьте занятые порты
 sudo netstat -tlnp | grep :5000
 
-# Проверка конфигурации Nginx
-sudo nginx -t
+# Убейте процесс если нужно
+sudo kill -9 <PID>
 ```
 
-## 📞 Поддержка
+### Проблемы с правами
+```bash
+# Исправьте права на файлы
+sudo chown -R www-data:www-data /var/www/farming-game
+sudo chmod -R 755 /var/www/farming-game
+```
 
-Если у вас возникли проблемы:
+### Проблемы с базой данных
+```bash
+# Проверьте подключение
+python3 -c "from database import Database; db = Database(); print('OK')"
 
-1. Проверьте логи сервисов
-2. Убедитесь, что все зависимости установлены
-3. Проверьте конфигурацию переменных окружения
-4. Создайте Issue в репозитории с подробным описанием проблемы
+# Создайте резервную копию
+cp farm_game.db farm_game.db.backup
+```
+
+## 🔄 Обновления
+
+### Автоматические обновления
+```bash
+# Создайте скрипт обновления
+#!/bin/bash
+cd /var/www/farming-game
+git pull origin main
+sudo systemctl restart farming-game
+```
+
+### Откат изменений
+```bash
+git log --oneline
+git reset --hard <commit_hash>
+sudo systemctl restart farming-game
+```
+
+## 📈 Масштабирование
+
+### Горизонтальное масштабирование
+- Используйте балансировщик нагрузки
+- Настройте несколько экземпляров приложения
+- Используйте Redis для сессий
+
+### Вертикальное масштабирование
+- Увеличьте ресурсы сервера
+- Оптимизируйте код и базу данных
+- Используйте кэширование
 
 ---
 
-**Удачного развертывания! 🚀**
+**🎮 Удачного деплоя!** 🚀

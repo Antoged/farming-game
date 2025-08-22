@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 Скрипт для тестирования игровой логики
+Основной URL игры: https://antoged.github.io/farming-game/
+Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html
 """
 
 from game_logic import GameLogic
@@ -86,6 +88,8 @@ if __name__ == "__main__":
         test_game_logic()
         
         print("\n🎉 Все тесты пройдены успешно!")
+        print("\n🌐 Основной URL игры: https://antoged.github.io/farming-game/")
+        print("📱 Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html")
         
     except Exception as e:
         print(f"\n❌ Ошибка тестирования: {e}")

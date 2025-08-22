@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 Скрипт для настройки Git репозитория и подготовки к загрузке на GitHub
+Основной URL игры: https://antoged.github.io/farming-game/
+Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html
 """
 
 import os
@@ -106,7 +108,8 @@ def setup_github_pages():
     print("4. Выберите ветку 'gh-pages' и папку '/' (root)")
     print("5. Нажмите 'Save'")
     print("\nПосле настройки ваш сайт будет доступен по адресу:")
-    print("https://your-username.github.io/farming-game/")
+    print("https://antoged.github.io/farming-game/")
+    print("📱 Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html")
 
 
 def create_github_workflow():
@@ -164,6 +167,10 @@ def main():
     print("2. Обновите URL в файлах конфигурации")
     print("3. Настройте переменные окружения на сервере")
     print("4. Запустите бота и протестируйте функциональность")
+    print("\n🌐 Игра будет доступна по адресу:")
+    print("   https://antoged.github.io/farming-game/")
+    print("📱 Telegram Mini App:")
+    print("   https://antoged.github.io/farming-game/telegram-app.html")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 Тестовый бот без Mini App для проверки работы
+Основной URL игры: https://antoged.github.io/farming-game/
+Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html
 """
 
 import os
@@ -116,6 +118,8 @@ def main():
     
     print("✅ Бот запущен!")
     print("📱 Найдите бота в Telegram и отправьте /start")
+    print("\n🌐 Основной URL игры: https://antoged.github.io/farming-game/")
+    print("📱 Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html")
     
     # Запускаем бота
     application.run_polling()

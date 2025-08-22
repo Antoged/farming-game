@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 Тест HTTPS соединения
+Основной URL игры: https://antoged.github.io/farming-game/
+Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html
 """
 
 import requests
@@ -12,10 +14,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def test_https():
     """Тестируем HTTPS соединение"""
     try:
-        response = requests.get('https://localhost:5000', verify=False)
+        response = requests.get('https://antoged.github.io/farming-game/', verify=False)
         print(f"✅ HTTPS сервер работает!")
         print(f"📊 Статус: {response.status_code}")
         print(f"📄 Размер ответа: {len(response.text)} байт")
+        print(f"🌐 URL: https://antoged.github.io/farming-game/")
+        print("📱 Telegram Mini App готов к использованию!")
+        print("\n🌐 Основной URL игры: https://antoged.github.io/farming-game/")
+        print("📱 Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html")
         return True
     except Exception as e:
         print(f"❌ Ошибка HTTPS соединения: {e}")

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 HTTPS сервер для Telegram Mini App
+Основной URL игры: https://antoged.github.io/farming-game/
+Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html
 """
 
 import ssl
@@ -155,7 +157,7 @@ def create_self_signed_cert():
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Moscow"),
         x509.NameAttribute(NameOID.LOCALITY_NAME, "Moscow"),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Farming Game"),
-        x509.NameAttribute(NameOID.COMMON_NAME, "localhost"),
+        x509.NameAttribute(NameOID.COMMON_NAME, "antoged.github.io"),
     ])
     
     cert = x509.CertificateBuilder().subject_name(
@@ -172,8 +174,7 @@ def create_self_signed_cert():
         datetime.now(timezone.utc) + timedelta(days=365)
     ).add_extension(
         x509.SubjectAlternativeName([
-            x509.DNSName("localhost"),
-            x509.IPAddress(ipaddress.IPv4Address("127.0.0.1")),
+                    x509.DNSName("antoged.github.io"),
         ]),
         critical=False,
     ).sign(private_key, hashes.SHA256())
@@ -207,8 +208,10 @@ if __name__ == '__main__':
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain('cert.pem', 'key.pem')
     
-    print("🔒 Запуск HTTPS сервера на https://localhost:5000")
+    print("🔒 Запуск HTTPS сервера на https://antoged.github.io/farming-game/")
     print("⚠️  Используется самоподписанный сертификат")
     print("📱 Для Telegram Mini App используйте этот URL в .env файле")
+    print("\n🌐 Основной URL игры: https://antoged.github.io/farming-game/")
+    print("📱 Telegram Mini App: https://antoged.github.io/farming-game/telegram-app.html")
     
     app.run(debug=True, host='0.0.0.0', port=5000, ssl_context=context)
