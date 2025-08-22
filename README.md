@@ -155,8 +155,7 @@ MIT License - см. файл [LICENSE](LICENSE)
 
 ## 🆘 Поддержка
 
-- 📧 Email: support@farming-game.com
-- 💬 Telegram: @farming_game_support
+- 💬 Telegram: @growfarm_support_bot
 - 🐛 Issues: [GitHub Issues](https://github.com/Antoged/farming-game/issues)
 
 ## 🙏 Благодарности
