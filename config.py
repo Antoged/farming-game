@@ -5,7 +5,7 @@ load_dotenv()
 
 # Telegram Bot Configuration
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-WEBAPP_URL = os.getenv('WEBAPP_URL', 'https://antoged.github.io/farming/telegram-app.html')
+WEBAPP_URL = os.getenv('WEBAPP_URL', 'https://antoged.github.io/farming-game/')
 
 # Game Configuration
 SHOP_REFRESH_INTERVAL = 300  # 5 minutes in seconds
