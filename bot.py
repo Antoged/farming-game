@@ -55,7 +55,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Создать или получить игрока
     player = game.db.get_or_create_player(user.id, user.username)
     
-    # Создать клавиатуру с кнопками
+    # Создать простую клавиатуру только с основными кнопками
     keyboard = [
         [
             InlineKeyboardButton(
@@ -64,11 +64,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             )
         ],
         [
-            InlineKeyboardButton("📊 Статистика", callback_data="stats"),
-            InlineKeyboardButton("🛒 Магазин", callback_data="shop")
-        ],
-        [
-            InlineKeyboardButton("🌤️ Погода", callback_data="weather"),
             InlineKeyboardButton("ℹ️ Помощь", callback_data="help")
         ]
     ]
@@ -103,63 +98,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     query = update.callback_query
     await query.answer()
     
-    user = query.from_user
-    player = game.db.get_or_create_player(user.id, user.username)
-    
-    if query.data == "stats":
-        stats = game.get_player_stats(user.id)
-        stats_text = f"""
-📊 Статистика игрока {user.first_name}:
-
-💰 Монеты: {stats['money']}
-📊 Уровень: {stats['level']}
-⭐ Опыт: {stats['experience']}
-📦 Предметов в инвентаре: {stats['inventory_count']}
-🌱 Посажено культур: {stats['total_planted']}
-🌾 Собрано урожая: {stats['total_harvested']}
-"""
-        await query.edit_message_text(stats_text)
-        
-    elif query.data == "shop":
-        shop_items = game.get_shop_items()
-        shop_text = "🛒 Магазин семян:\n\n"
-        
-        for item in shop_items:
-            emoji = SEEDS[item['seed_type']]['emoji']
-            name = item['name']
-            price = item['price']
-            shop_text += f"{emoji} {name}: 💰{price}\n"
-        
-        shop_text += "\nНажмите '🌾 Играть в ферму' чтобы купить!"
-        await query.edit_message_text(shop_text)
-        
-    elif query.data == "weather":
-        current_weather = game.get_current_weather_info()
-        weather_emoji = WEATHER_EFFECTS[current_weather['type']]['emoji']
-        weather_name = current_weather['name']
-        
-        weather_text = f"""
-🌤️ Текущая погода:
-
-{weather_emoji} {weather_name}
-
-📈 Множитель роста: x{current_weather['growth_multiplier']}
-💰 Множитель цен: x{current_weather['price_multiplier']}
-
-Погода влияет на скорость роста растений и цены на рынке!
-"""
-        await query.edit_message_text(weather_text)
-        
-    elif query.data == "help":
+    if query.data == "help":
         help_text = """
 ℹ️ Помощь по игре:
 
 🎮 Основные команды:
 /start - Начать игру
-/farm - Управление фермой
-/market - Рынок
-/stats - Статистика
-/help - Эта справка
 
 🌱 Как играть:
 1. Откройте игру через кнопку "🌾 Играть в ферму"
@@ -177,111 +121,18 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 🛒 Магазин обновляется каждые 5 минут
 ⏰ Урожай растет в реальном времени
+
+Все действия выполняются в игре через кнопку "🌾 Играть в ферму"!
 """
         await query.edit_message_text(help_text)
-
-async def farm_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Команда /farm - показать статус фермы"""
-    user = update.effective_user
-    farm_status = game.get_farm_status(user.id)
-    
-    farm_text = f"🌱 Ферма игрока {user.first_name}:\n\n"
-    
-    for i, plot in enumerate(farm_status):
-        if plot['status'] == 'empty':
-            farm_text += f"🌱 Участок {i+1}: Пустой\n"
-        elif plot['status'] == 'planted':
-            time_left = plot['time_left']
-            seed_name = plot['seed_name']
-            farm_text += f"🌿 Участок {i+1}: {seed_name} (осталось {time_left}s)\n"
-        elif plot['status'] == 'ready':
-            seed_name = plot['seed_name']
-            farm_text += f"🌾 Участок {i+1}: {seed_name} - готов к сбору!\n"
-    
-    farm_text += "\nНажмите '🌾 Играть в ферму' для управления!"
-    
-    await update.message.reply_text(farm_text)
-
-async def market_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Команда /market - показать рынок"""
-    user = update.effective_user
-    shop_items = game.get_shop_items()
-    
-    market_text = f"🛒 Рынок семян:\n\n"
-    
-    for item in shop_items:
-        emoji = SEEDS[item['seed_type']]['emoji']
-        name = item['name']
-        price = item['price']
-        market_text += f"{emoji} {name}: 💰{price}\n"
-    
-    market_text += "\nНажмите '🌾 Играть в ферму' чтобы купить!"
-    
-    await update.message.reply_text(market_text)
-
-async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Команда /stats - показать статистику"""
-    user = update.effective_user
-    stats = game.get_player_stats(user.id)
-    
-    stats_text = f"""
-📊 Статистика игрока {user.first_name}:
-
-💰 Монеты: {stats['money']}
-📊 Уровень: {stats['level']}
-⭐ Опыт: {stats['experience']}
-📦 Предметов в инвентаре: {stats['inventory_count']}
-🌱 Посажено культур: {stats['total_planted']}
-🌾 Собрано урожая: {stats['total_harvested']}
-
-Продолжайте играть чтобы улучшить статистику!
-"""
-    
-    await update.message.reply_text(stats_text)
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Команда /help - показать справку"""
-    help_text = """
-ℹ️ Помощь по игре:
-
-🎮 Основные команды:
-/start - Начать игру
-/farm - Управление фермой
-/market - Рынок
-/stats - Статистика
-/help - Эта справка
-
-🌱 Как играть:
-1. Откройте игру через кнопку "🌾 Играть в ферму"
-2. Покупайте семена в магазине
-3. Сажайте их на участки фермы
-4. Ждите роста (время зависит от культуры)
-5. Собирайте урожай и продавайте
-6. Зарабатывайте деньги и развивайтесь!
-
-🌤️ Погода:
-- Солнечно: +20% рост, +10% цены
-- Дождливо: +50% рост, +30% цены
-- Облачно: обычные показатели
-- Гроза: -20% рост, -10% цены
-
-🛒 Магазин обновляется каждые 5 минут
-⏰ Урожай растет в реальном времени
-"""
-    
-    await update.message.reply_text(help_text)
 
 def main() -> None:
     """Запуск бота"""
     # Создать приложение
     application = Application.builder().token(BOT_TOKEN).build()
     
-    # Добавить обработчики
+    # Добавить только необходимые обработчики
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("farm", farm_command))
-    application.add_handler(CommandHandler("market", market_command))
-    application.add_handler(CommandHandler("stats", stats_command))
-    application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CallbackQueryHandler(button_handler))
     
     # Запустить планировщик

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Фермерская игра</title>
+    <title>🌾 Фермерская игра</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -25,6 +25,7 @@
             background: white;
             min-height: 100vh;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
         }
 
         .header {
@@ -33,100 +34,164 @@
             padding: 20px;
             text-align: center;
             position: relative;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .weather-info {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             background: rgba(255,255,255,0.2);
-            padding: 5px 10px;
-            border-radius: 15px;
+            padding: 8px 12px;
+            border-radius: 20px;
             font-size: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
         .stats {
             display: flex;
             justify-content: space-around;
-            padding: 15px;
-            background: #f8f9fa;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             border-bottom: 1px solid #dee2e6;
         }
 
         .stat-item {
             text-align: center;
+            padding: 10px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-width: 80px;
         }
 
         .stat-value {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             color: #4CAF50;
+            margin-bottom: 5px;
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: 11px;
             color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .nav-tabs {
             display: flex;
             background: #f8f9fa;
             border-bottom: 1px solid #dee2e6;
+            border-radius: 0 0 15px 15px;
+            overflow: hidden;
         }
 
         .nav-tab {
             flex: 1;
-            padding: 15px;
+            padding: 18px 15px;
             text-align: center;
             cursor: pointer;
             border-bottom: 3px solid transparent;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            background: rgba(76, 175, 80, 0.1);
         }
 
         .nav-tab.active {
             border-bottom-color: #4CAF50;
             background: white;
             color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: #4CAF50;
+            border-radius: 2px;
         }
 
         .content {
-            padding: 20px;
+            padding: 25px;
             min-height: 400px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content h3 {
+            margin-bottom: 20px;
+            color: #4CAF50;
+            font-size: 20px;
+            text-align: center;
         }
 
         .farm-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-bottom: 25px;
         }
 
         .plot {
             aspect-ratio: 1;
-            border: 2px solid #ddd;
-            border-radius: 10px;
+            border: 3px solid #e9ecef;
+            border-radius: 15px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             position: relative;
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            font-weight: 500;
+            overflow: hidden;
         }
 
         .plot:hover {
             border-color: #4CAF50;
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .plot.empty {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            color: #666;
         }
 
         .plot.planted {
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
+            border-color: #4CAF50;
         }
 
         .plot.ready {
             background: linear-gradient(135deg, #FF9800, #F57C00);
             color: white;
+            border-color: #FF9800;
             animation: pulse 2s infinite;
         }
 
@@ -136,115 +201,156 @@
             100% { transform: scale(1); }
         }
 
+        .plot-content {
+            text-align: center;
+            z-index: 2;
+        }
+
+        .plot-name {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .plot-status {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+
         .progress-bar {
             position: absolute;
             bottom: 0;
             left: 0;
-            height: 3px;
-            background: #4CAF50;
-            border-radius: 0 0 10px 10px;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            border-radius: 0 0 12px 12px;
+            transition: width 0.3s ease;
         }
 
-        .shop-item {
+        .shop-item, .inventory-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            margin-bottom: 10px;
+            padding: 18px;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            margin-bottom: 15px;
             background: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .shop-item:hover {
+        .shop-item:hover, .inventory-item:hover {
             border-color: #4CAF50;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+            transform: translateY(-1px);
         }
 
         .item-info {
             flex: 1;
+            margin-right: 15px;
         }
 
         .item-name {
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 16px;
         }
 
         .item-details {
-            font-size: 12px;
+            font-size: 13px;
             color: #666;
+            line-height: 1.4;
         }
 
         .item-price {
             font-weight: bold;
             color: #4CAF50;
             font-size: 18px;
+            margin-right: 15px;
         }
 
         .btn {
-            background: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border-radius: 25px;
             cursor: pointer;
             font-size: 14px;
-            transition: background 0.3s;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+            min-width: 80px;
         }
 
         .btn:hover {
-            background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
         }
 
         .btn:disabled {
             background: #ccc;
             cursor: not-allowed;
-        }
-
-        .inventory-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            background: white;
-        }
-
-        .item-stats {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+            transform: none;
+            box-shadow: none;
         }
 
         .message {
             padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
+            margin: 15px 0;
+            border-radius: 10px;
             text-align: center;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message.success {
-            background: #d4edda;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
             color: #155724;
             border: 1px solid #c3e6cb;
         }
 
         .message.error {
-            background: #f8d7da;
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
 
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 40px 20px;
             color: #666;
+            font-size: 16px;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #4CAF50;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
         .seed-selector {
@@ -253,41 +359,98 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            backdrop-filter: blur(5px);
         }
 
         .seed-modal {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 300px;
+            padding: 25px;
+            border-radius: 20px;
+            max-width: 320px;
             width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .seed-modal h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4CAF50;
         }
 
         .seed-option {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            margin-bottom: 12px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         .seed-option:hover {
             border-color: #4CAF50;
-            background: #f8f9fa;
+            background: rgba(76, 175, 80, 0.05);
+            transform: translateX(5px);
+        }
+
+        .seed-option:last-child {
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state::before {
+            content: '🌱';
+            font-size: 48px;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h4 {
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+
+        .refresh-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(180deg);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <button class="refresh-btn" onclick="refreshGame()" title="Обновить">🔄</button>
             <h1>🌾 Фермерская игра</h1>
             <div class="weather-info" id="weatherInfo">
                 ☀️ Обычная погода
@@ -317,8 +480,8 @@
 
         <div class="content">
             <!-- Ферма -->
-            <div id="farm-tab" class="tab-content">
-                <h3>Ваша ферма</h3>
+            <div id="farm-tab" class="tab-content active">
+                <h3>🌱 Ваша ферма</h3>
                 <div class="farm-grid" id="farmGrid">
                     <!-- Участки будут добавлены динамически -->
                 </div>
@@ -326,18 +489,18 @@
             </div>
 
             <!-- Магазин -->
-            <div id="shop-tab" class="tab-content hidden">
-                <h3>Магазин семян</h3>
+            <div id="shop-tab" class="tab-content">
+                <h3>🛒 Магазин семян</h3>
                 <div id="shopItems">
-                    <div class="loading">Загрузка...</div>
+                    <div class="loading">Загрузка магазина...</div>
                 </div>
             </div>
 
             <!-- Инвентарь -->
-            <div id="inventory-tab" class="tab-content hidden">
-                <h3>Ваш инвентарь</h3>
+            <div id="inventory-tab" class="tab-content">
+                <h3>📦 Ваш инвентарь</h3>
                 <div id="inventoryItems">
-                    <div class="loading">Загрузка...</div>
+                    <div class="loading">Загрузка инвентаря...</div>
                 </div>
             </div>
         </div>
@@ -345,7 +508,7 @@
         <!-- Модальное окно выбора семян -->
         <div id="seedSelector" class="seed-selector hidden">
             <div class="seed-modal">
-                <h3>Выберите семечко</h3>
+                <h3>🌱 Выберите семечко</h3>
                 <div id="seedOptions"></div>
                 <button class="btn" onclick="closeSeedSelector()">Отмена</button>
             </div>
@@ -356,15 +519,7 @@
         let tg = window.Telegram.WebApp;
         let currentUser = null;
         let selectedPlot = null;
-        let seeds = {
-            'carrot': { name: 'Морковь', price: 10 },
-            'tomato': { name: 'Помидор', price: 25 },
-            'potato': { name: 'Картошка', price: 15 },
-            'cucumber': { name: 'Огурец', price: 20 },
-            'strawberry': { name: 'Клубника', price: 50 },
-            'watermelon': { name: 'Арбуз', price: 100 },
-            'golden_apple': { name: 'Золотое яблоко', price: 500 }
-        };
+        let currentTab = 'farm';
 
         // Инициализация
         tg.ready();
@@ -382,7 +537,6 @@
                 currentUser = { id: parseInt(userId), username: null };
                 initUser();
             } else {
-                // Если нет user_id нигде, показать ошибку
                 document.body.innerHTML = '<div class="loading">Ошибка: не найден user_id. Пожалуйста, используйте кнопку "🌾 Играть в ферму" в боте.</div>';
             }
         }
@@ -406,6 +560,7 @@
                 }
             } catch (error) {
                 console.error('Ошибка инициализации:', error);
+                showMessage('Ошибка инициализации игры', false);
             }
         }
 
@@ -419,10 +574,15 @@
                 const response = await fetch(`/api/farm?user_id=${currentUser.id}`);
                 const data = await response.json();
                 
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
                 renderFarm(data.farm);
                 updateWeather(data.weather);
             } catch (error) {
                 console.error('Ошибка загрузки фермы:', error);
+                showMessage('Ошибка загрузки фермы', false);
             }
         }
 
@@ -432,29 +592,39 @@
 
             for (let i = 1; i <= 9; i++) {
                 const plot = document.createElement('div');
-                plot.className = 'plot';
+                plot.className = 'plot empty';
                 plot.setAttribute('data-plot', i);
                 
                 const plotData = farmPlots.find(p => p.plot_id === i);
                 
                 if (plotData) {
-                    if (plotData.status === 'Готов к сбору') {
-                        plot.classList.add('ready');
+                    if (plotData.status === 'ready' || plotData.status === 'Готов к сбору') {
+                        plot.className = 'plot ready';
                         plot.innerHTML = `
-                            <div>${plotData.seed_name}</div>
-                            <div style="font-size: 12px;">Готов!</div>
+                            <div class="plot-content">
+                                <div class="plot-name">${plotData.seed_name || 'Готово'}</div>
+                                <div class="plot-status">Готов к сбору!</div>
+                            </div>
                         `;
                         plot.onclick = () => harvestPlot(i);
-                    } else {
-                        plot.classList.add('planted');
+                    } else if (plotData.status === 'planted' || plotData.status === 'Растет') {
+                        plot.className = 'plot planted';
+                        const progress = plotData.progress || 0;
                         plot.innerHTML = `
-                            <div>${plotData.seed_name}</div>
-                            <div style="font-size: 12px;">${plotData.status}</div>
-                            <div class="progress-bar" style="width: ${plotData.progress}%"></div>
+                            <div class="plot-content">
+                                <div class="plot-name">${plotData.seed_name || 'Растет'}</div>
+                                <div class="plot-status">${plotData.status}</div>
+                            </div>
+                            <div class="progress-bar" style="width: ${progress}%"></div>
                         `;
                     }
                 } else {
-                    plot.innerHTML = `<div>Участок ${i}</div>`;
+                    plot.innerHTML = `
+                        <div class="plot-content">
+                            <div class="plot-name">Участок ${i}</div>
+                            <div class="plot-status">Нажмите для посадки</div>
+                        </div>
+                    `;
                     plot.onclick = () => selectPlot(i);
                 }
                 
@@ -463,12 +633,14 @@
         }
 
         function updateWeather(weather) {
+            if (!weather) return;
+            
             const weatherInfo = document.getElementById('weatherInfo');
             const emoji = weather.type === 'sunny' ? '☀️' : 
                           weather.type === 'rainy' ? '🌧️' : 
                           weather.type === 'cloudy' ? '☁️' : 
                           weather.type === 'stormy' ? '⛈️' : '🌤️';
-            weatherInfo.innerHTML = `${emoji} ${weather.name}`;
+            weatherInfo.innerHTML = `${emoji} ${weather.name || 'Обычная погода'}`;
         }
 
         function selectPlot(plotId) {
@@ -481,20 +653,50 @@
             const options = document.getElementById('seedOptions');
             options.innerHTML = '';
 
-            Object.entries(seeds).forEach(([type, seed]) => {
+            // Получить доступные семена из магазина
+            loadShopForPlanting();
+
+            selector.classList.remove('hidden');
+        }
+
+        async function loadShopForPlanting() {
+            try {
+                const response = await fetch('/api/shop');
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                renderSeedOptions(data.items);
+            } catch (error) {
+                console.error('Ошибка загрузки семян:', error);
+                showMessage('Ошибка загрузки семян', false);
+            }
+        }
+
+        function renderSeedOptions(items) {
+            const options = document.getElementById('seedOptions');
+            options.innerHTML = '';
+
+            if (items.length === 0) {
+                options.innerHTML = '<div class="empty-state">Нет доступных семян</div>';
+                return;
+            }
+
+            items.forEach(item => {
                 const option = document.createElement('div');
                 option.className = 'seed-option';
                 option.innerHTML = `
                     <div>
-                        <div class="item-name">${seed.name}</div>
-                        <div class="item-details">Цена: ${seed.price} монет</div>
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-details">Время роста: ${item.growth_time}с</div>
                     </div>
+                    <div class="item-price">${item.price} 💰</div>
                 `;
-                option.onclick = () => plantSeed(type);
+                option.onclick = () => plantSeed(item.seed_type);
                 options.appendChild(option);
             });
-
-            selector.classList.remove('hidden');
         }
 
         function closeSeedSelector() {
@@ -525,7 +727,7 @@
                 }
             } catch (error) {
                 console.error('Ошибка посадки:', error);
-                showMessage('Ошибка посадки', false);
+                showMessage('Ошибка посадки семени', false);
             }
         }
 
@@ -558,9 +760,15 @@
             try {
                 const response = await fetch('/api/shop');
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
                 renderShop(data.items);
             } catch (error) {
                 console.error('Ошибка загрузки магазина:', error);
+                showMessage('Ошибка загрузки магазина', false);
             }
         }
 
@@ -568,8 +776,8 @@
             const container = document.getElementById('shopItems');
             container.innerHTML = '';
 
-            if (items.length === 0) {
-                container.innerHTML = '<div class="message">Магазин пуст</div>';
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h4>Магазин пуст</h4><p>Попробуйте позже</p></div>';
                 return;
             }
 
@@ -609,7 +817,7 @@
                 }
             } catch (error) {
                 console.error('Ошибка покупки:', error);
-                showMessage('Ошибка покупки', false);
+                showMessage('Ошибка покупки семени', false);
             }
         }
 
@@ -617,9 +825,15 @@
             try {
                 const response = await fetch(`/api/inventory?user_id=${currentUser.id}`);
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
                 renderInventory(data.items);
             } catch (error) {
                 console.error('Ошибка загрузки инвентаря:', error);
+                showMessage('Ошибка загрузки инвентаря', false);
             }
         }
 
@@ -627,8 +841,8 @@
             const container = document.getElementById('inventoryItems');
             container.innerHTML = '';
 
-            if (items.length === 0) {
-                container.innerHTML = '<div class="message">Инвентарь пуст</div>';
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h4>Инвентарь пуст</h4><p>Купите семена в магазине и посадите их</p></div>';
                 return;
             }
 
@@ -637,13 +851,13 @@
                 itemDiv.className = 'inventory-item';
                 itemDiv.innerHTML = `
                     <div class="item-info">
-                        <div class="item-name">${seeds[item.item_type]?.name || item.item_type}</div>
-                        <div class="item-stats">
-                            Вес: ${item.weight}g | Размер: ${item.size}cm | Качество: ${Math.round(item.quality * 100)}%
+                        <div class="item-name">${item.item_type || 'Предмет'}</div>
+                        <div class="item-details">
+                            Вес: ${item.weight || 0}g | Размер: ${item.size || 0}cm | Качество: ${Math.round((item.quality || 1) * 100)}%
                         </div>
                     </div>
                     <div>
-                        <div class="item-price">${item.price} 💰</div>
+                        <div class="item-price">${item.price || 0} 💰</div>
                         <button class="btn" onclick="sellItem(${item.id})">Продать</button>
                     </div>
                 `;
@@ -672,7 +886,7 @@
                 }
             } catch (error) {
                 console.error('Ошибка продажи:', error);
-                showMessage('Ошибка продажи', false);
+                showMessage('Ошибка продажи предмета', false);
             }
         }
 
@@ -680,8 +894,13 @@
             try {
                 const response = await fetch(`/api/stats?user_id=${currentUser.id}`);
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
                 updateStats(data);
-                document.getElementById('inventoryCount').textContent = data.inventory_count;
+                document.getElementById('inventoryCount').textContent = data.inventory_count || 0;
             } catch (error) {
                 console.error('Ошибка загрузки статистики:', error);
             }
@@ -692,12 +911,23 @@
             messageDiv.className = `message ${isSuccess ? 'success' : 'error'}`;
             messageDiv.textContent = message;
             
-            const activeTab = document.querySelector('.tab-content:not(.hidden)');
-            activeTab.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                activeTab.appendChild(messageDiv);
+                
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 3000);
+            }
+        }
+
+        function refreshGame() {
+            if (currentUser) {
+                loadFarm();
+                loadStats();
+                if (currentTab === 'shop') loadShop();
+                if (currentTab === 'inventory') loadInventory();
+            }
         }
 
         // Переключение вкладок
@@ -705,12 +935,13 @@
             tab.addEventListener('click', () => {
                 // Убрать активный класс со всех вкладок
                 document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 
                 // Добавить активный класс к выбранной вкладке
                 tab.classList.add('active');
                 const tabName = tab.getAttribute('data-tab');
-                document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+                currentTab = tabName;
+                document.getElementById(`${tabName}-tab`).classList.add('active');
                 
                 // Загрузить данные для вкладки
                 if (tabName === 'shop') {

@@ -158,5 +158,18 @@ def get_weather():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/player', methods=['GET'])
+def get_player():
+    """Получить информацию об игроке"""
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'user_id required'}), 400
+        
+        player = game.db.get_or_create_player(int(user_id), None)
+        return jsonify(player)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
