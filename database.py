@@ -48,6 +48,16 @@ class Database:
             if 'status' not in columns:
                 cursor.execute('ALTER TABLE farm_plots ADD COLUMN status TEXT DEFAULT "empty"')
             
+            # Обновить существующие записи, где status = 0 или NULL
+            cursor.execute('''
+                UPDATE farm_plots 
+                SET status = CASE 
+                    WHEN seed_type IS NOT NULL THEN 'planted'
+                    ELSE 'empty'
+                END
+                WHERE status IS NULL OR status = 0 OR status = ''
+            ''')
+            
             # Таблица инвентаря (собранные плоды)
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS inventory (

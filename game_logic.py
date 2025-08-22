@@ -112,6 +112,17 @@ class GameLogic:
         
         farm_status = []
         for plot in plots:
+            # Нормализовать статус участка
+            if plot['seed_type']:
+                # Если есть семя, то участок посажен
+                plot['status'] = 'planted'
+            elif plot['status'] in ['planted', 1, '1']:
+                plot['status'] = 'planted'
+            elif plot['status'] in ['ready', 2, '2']:
+                plot['status'] = 'ready'
+            else:
+                plot['status'] = 'empty'
+            
             if plot['status'] == 'planted':
                 # Рассчитать оставшееся время роста
                 planted_time = datetime.fromisoformat(plot['planted_at'].replace('Z', '+00:00'))
