@@ -247,14 +247,43 @@
         tg.expand();
 
         // Генерация или получение уникального user_id для каждого пользователя
+        console.log('=== ИНИЦИАЛИЗАЦИЯ ФЕРМЕРСКОЙ ИГРЫ ===');
+        console.log('Проверяем localStorage...');
+        
         let userId = localStorage.getItem('farming_game_user_id');
+        console.log('Загруженный userId из localStorage:', userId);
         
         // Если ID еще нет, генерируем новый уникальный ID
         if (!userId) {
-            // Генерируем уникальный ID на основе времени, случайного числа и хеша браузера
-            const browserFingerprint = navigator.userAgent.length + screen.width + screen.height;
-            userId = 'user_' + Date.now() + '_' + Math.floor(Math.random() * 10000) + '_' + (browserFingerprint % 1000);
-            localStorage.setItem('farming_game_user_id', userId);
+            console.log('userId не найден, генерируем новый...');
+            
+            try {
+                // Генерируем уникальный ID на основе времени, случайного числа и хеша браузера
+                const browserFingerprint = navigator.userAgent.length + screen.width + screen.height;
+                userId = 'user_' + Date.now() + '_' + Math.floor(Math.random() * 10000) + '_' + (browserFingerprint % 1000);
+                
+                console.log('Сгенерирован новый userId:', userId);
+                console.log('Сохраняем в localStorage...');
+                
+                localStorage.setItem('farming_game_user_id', userId);
+                
+                // Проверяем, что сохранилось
+                const savedUserId = localStorage.getItem('farming_game_user_id');
+                console.log('Проверка сохранения - загруженный userId:', savedUserId);
+                
+                if (savedUserId !== userId) {
+                    throw new Error('localStorage не работает корректно');
+                }
+                
+                console.log('✅ userId успешно сгенерирован и сохранен');
+                
+            } catch (error) {
+                console.error('❌ ОШИБКА генерации userId:', error);
+                userId = 'fallback_' + Math.random().toString(36).substr(2, 9);
+                console.log('Используем fallback userId:', userId);
+            }
+        } else {
+            console.log('✅ userId загружен из localStorage:', userId);
         }
         
         // Всегда работаем в демо-режиме с локальными данными
@@ -297,11 +326,22 @@
 
         // Функция для получения mock данных из localStorage или создания новых
         function getMockData() {
+            console.log('getMockData вызвана с userId:', userId);
+            
+            if (!userId) {
+                console.error('❌ ОШИБКА: userId пустой в getMockData!');
+                return null;
+            }
+            
             const storageKey = `farming_game_data_${userId}`;
+            console.log('Ключ хранилища:', storageKey);
+            
             let mockData = JSON.parse(localStorage.getItem(storageKey) || 'null');
+            console.log('Загруженные данные из localStorage:', mockData ? 'найдены' : 'не найдены');
             
             // Если данных нет, создаем базовые
             if (!mockData) {
+                console.log('Создаем новые базовые данные...');
                 mockData = {
                     farm: {
                         plots: [
@@ -330,20 +370,52 @@
                     stats: { money: 150, level: 2, inventory_count: 2 },
                     weather: { type: 'sunny', name: 'Солнечно', emoji: '☀️' }
                 };
+                console.log('Базовые данные созданы');
                 saveMockData(mockData);
+                console.log('Базовые данные сохранены');
             }
             
+            console.log('Возвращаем данные:', mockData ? 'успешно' : 'ошибка');
             return mockData;
         }
         
         // Функция для сохранения mock данных в localStorage
         function saveMockData(data) {
+            console.log('saveMockData вызвана с userId:', userId);
+            
+            if (!userId) {
+                console.error('❌ ОШИБКА: userId пустой в saveMockData!');
+                return;
+            }
+            
             const storageKey = `farming_game_data_${userId}`;
-            localStorage.setItem(storageKey, JSON.stringify(data));
+            console.log('Сохраняем данные по ключу:', storageKey);
+            
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(data));
+                console.log('✅ Данные сохранены успешно');
+            } catch (error) {
+                console.error('❌ ОШИБКА сохранения данных:', error);
+            }
         }
         
         // Получаем актуальные mock данные
+        console.log('Инициализируем mockData...');
         let mockData = getMockData();
+        
+        if (!mockData) {
+            console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: не удалось инициализировать игровые данные!');
+            document.body.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: red;">
+                    <h2>❌ Ошибка загрузки игры</h2>
+                    <p>Не удалось инициализировать игровые данные.</p>
+                    <p>Возможно, localStorage заблокирован в вашем браузере.</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; font-size: 16px;">🔄 Перезагрузить</button>
+                </div>
+            `;
+        } else {
+            console.log('✅ mockData успешно инициализированы');
+        }
 
         // Загрузка фермы
         async function loadFarm() {
@@ -637,12 +709,27 @@
         }
 
         // Инициализация приложения
-        if (userId) {
-            updateModeInfo();
-            loadFarm();
-            updateWeather();
-            updateStats();
+        console.log('Инициализация игры с userId:', userId);
+        
+        // Проверяем, что userId был успешно сгенерирован
+        if (!userId) {
+            console.error('КРИТИЧЕСКАЯ ОШИБКА: userId не был сгенерирован!');
+            document.body.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: red;">
+                    <h2>❌ Ошибка инициализации</h2>
+                    <p>Не удалось сгенерировать уникальный ID пользователя.</p>
+                    <p>Попробуйте перезагрузить страницу или очистить данные браузера.</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; font-size: 16px;">🔄 Перезагрузить</button>
+                </div>
+            `;
+            return;
         }
+        
+        // Инициализируем игру
+        updateModeInfo();
+        loadFarm();
+        updateWeather();
+        updateStats();
 
         // Автообновление каждые 30 секунд
         setInterval(() => {
