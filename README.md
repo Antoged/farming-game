@@ -4,7 +4,7 @@
 
 ## 🌐 Веб-сайт проекта
 
-**🌾 [Farming Game - Live Demo](https://antoged.github.io/farming/)**
+**🌾 [Farming Game - Live Demo](https://antoged.github.io/farming-game/)**
 
 Полнофункциональный веб-сайт проекта с подробным описанием возможностей, технологического стека и инструкциями по установке.
 
@@ -99,7 +99,12 @@ python test_game.py
 
 ## 🌐 Веб-интерфейс
 
+### Локальная разработка
 Веб-интерфейс доступен по адресу: `http://localhost:5000`
+
+### GitHub Pages
+- **Статический лендинг**: [https://antoged.github.io/farming/](https://antoged.github.io/farming/)
+- **Telegram Mini App**: [https://antoged.github.io/farming/telegram-app.html](https://antoged.github.io/farming/telegram-app.html)
 
 ### Функции веб-интерфейса:
 - 📊 Просмотр статистики фермы

@@ -145,15 +145,28 @@ class Database:
             plots = cursor.fetchall()
             conn.close()
             
-            return [{
-                'id': plot[0],
-                'user_id': plot[1],
-                'plot_id': plot[2],
-                'seed_type': plot[3],
-                'planted_at': plot[4],
-                'growth_time': plot[5],
-                'is_ready': plot[6]
-            } for plot in plots]
+            result = []
+            for plot in plots:
+                # Определить статус участка
+                if plot[6]:  # is_ready
+                    status = 'ready'
+                elif plot[3]:  # seed_type (если есть, значит посажен)
+                    status = 'planted'
+                else:
+                    status = 'empty'
+                
+                result.append({
+                    'id': plot[0],
+                    'user_id': plot[1],
+                    'plot_id': plot[2],
+                    'seed_type': plot[3],
+                    'planted_at': plot[4],
+                    'growth_time': plot[5],
+                    'is_ready': plot[6],
+                    'status': status
+                })
+            
+            return result
     
     def plant_seed(self, user_id, plot_id, seed_type, growth_time):
         """Посадить семечко"""

@@ -125,8 +125,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         shop_text = "🛒 Магазин семян:\n\n"
         
         for item in shop_items:
-            emoji = SEEDS[item['type']]['emoji']
-            name = SEEDS[item['type']]['name']
+            emoji = SEEDS[item['seed_type']]['emoji']
+            name = item['name']
             price = item['price']
             shop_text += f"{emoji} {name}: 💰{price}\n"
         
@@ -134,7 +134,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await query.edit_message_text(shop_text)
         
     elif query.data == "weather":
-        current_weather = game.get_current_weather()
+        current_weather = game.get_current_weather_info()
         weather_emoji = WEATHER_EFFECTS[current_weather['type']]['emoji']
         weather_name = current_weather['name']
         
@@ -187,15 +187,15 @@ async def farm_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     
     farm_text = f"🌱 Ферма игрока {user.first_name}:\n\n"
     
-    for i, plot in enumerate(farm_status['plots']):
+    for i, plot in enumerate(farm_status):
         if plot['status'] == 'empty':
             farm_text += f"🌱 Участок {i+1}: Пустой\n"
         elif plot['status'] == 'planted':
             time_left = plot['time_left']
-            seed_name = SEEDS[plot['seed_type']]['name']
+            seed_name = plot['seed_name']
             farm_text += f"🌿 Участок {i+1}: {seed_name} (осталось {time_left}s)\n"
         elif plot['status'] == 'ready':
-            seed_name = SEEDS[plot['seed_type']]['name']
+            seed_name = plot['seed_name']
             farm_text += f"🌾 Участок {i+1}: {seed_name} - готов к сбору!\n"
     
     farm_text += "\nНажмите '🌾 Играть в ферму' для управления!"
@@ -210,8 +210,8 @@ async def market_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     market_text = f"🛒 Рынок семян:\n\n"
     
     for item in shop_items:
-        emoji = SEEDS[item['type']]['emoji']
-        name = SEEDS[item['type']]['name']
+        emoji = SEEDS[item['seed_type']]['emoji']
+        name = item['name']
         price = item['price']
         market_text += f"{emoji} {name}: 💰{price}\n"
     

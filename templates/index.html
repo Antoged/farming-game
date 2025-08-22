@@ -374,6 +374,17 @@
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             currentUser = tg.initDataUnsafe.user;
             initUser();
+        } else {
+            // Fallback для menu button - получить user_id из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user_id');
+            if (userId) {
+                currentUser = { id: parseInt(userId), username: null };
+                initUser();
+            } else {
+                // Если нет user_id нигде, показать ошибку
+                document.body.innerHTML = '<div class="loading">Ошибка: не найден user_id. Пожалуйста, используйте кнопку "🌾 Играть в ферму" в боте.</div>';
+            }
         }
 
         async function initUser() {

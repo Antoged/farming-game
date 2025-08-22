@@ -105,25 +105,46 @@ class GameLogic:
         
         farm_status = []
         for plot in plots:
-            planted_time = datetime.fromisoformat(plot['planted_at'].replace('Z', '+00:00'))
-            growth_time = timedelta(seconds=plot['growth_time'])
-            time_passed = current_time - planted_time
-            
-            if time_passed >= growth_time:
-                status = "Готов к сбору"
-                progress = 100
-            else:
-                progress = min(100, (time_passed.total_seconds() / plot['growth_time']) * 100)
-                remaining_time = growth_time - time_passed
-                status = f"Растет ({int(remaining_time.total_seconds())}с)"
-            
-            farm_status.append({
-                'plot_id': plot['plot_id'],
-                'seed_type': plot['seed_type'],
-                'seed_name': SEEDS[plot['seed_type']]['name'],
-                'status': status,
-                'progress': round(progress, 1)
-            })
+            if plot['status'] == 'empty':
+                farm_status.append({
+                    'plot_id': plot['plot_id'],
+                    'seed_type': None,
+                    'seed_name': None,
+                    'status': 'empty',
+                    'progress': 0
+                })
+            elif plot['status'] == 'planted':
+                planted_time = datetime.fromisoformat(plot['planted_at'].replace('Z', '+00:00'))
+                growth_time = timedelta(seconds=plot['growth_time'])
+                time_passed = current_time - planted_time
+                
+                if time_passed >= growth_time:
+                    status = "ready"
+                    progress = 100
+                    time_left = 0
+                else:
+                    progress = min(100, (time_passed.total_seconds() / plot['growth_time']) * 100)
+                    remaining_time = growth_time - time_passed
+                    status = "planted"
+                    time_left = int(remaining_time.total_seconds())
+                
+                farm_status.append({
+                    'plot_id': plot['plot_id'],
+                    'seed_type': plot['seed_type'],
+                    'seed_name': SEEDS[plot['seed_type']]['name'],
+                    'status': status,
+                    'progress': round(progress, 1),
+                    'time_left': time_left
+                })
+            elif plot['status'] == 'ready':
+                farm_status.append({
+                    'plot_id': plot['plot_id'],
+                    'seed_type': plot['seed_type'],
+                    'seed_name': SEEDS[plot['seed_type']]['name'],
+                    'status': 'ready',
+                    'progress': 100,
+                    'time_left': 0
+                })
         
         return farm_status
     
@@ -208,14 +229,36 @@ class GameLogic:
                 item_counts[item_type] = 0
             item_counts[item_type] += 1
         
+        # Получить статистику по посадкам и сбору урожая
+        farm_plots = self.db.get_farm_plots(user_id)
+        total_planted = sum(1 for plot in farm_plots if plot['status'] == 'planted')
+        total_harvested = sum(1 for plot in farm_plots if plot['status'] == 'ready')
+        
         return {
             'money': player['money'],
             'experience': player['experience'],
             'level': player['level'],
             'total_inventory_value': total_inventory_value,
             'inventory_count': len(inventory),
-            'item_counts': item_counts
+            'item_counts': item_counts,
+            'total_planted': total_planted,
+            'total_harvested': total_harvested
         }
+    
+    def get_shop_items(self):
+        """Получить товары магазина"""
+        shop_items = self.db.get_shop_items()
+        
+        items_with_names = []
+        for item in shop_items:
+            seed_data = SEEDS[item['seed_type']]
+            items_with_names.append({
+                **item,
+                'name': seed_data['name'],
+                'growth_time': seed_data['growth_time']
+            })
+        
+        return items_with_names
     
     def get_shop_items_with_names(self):
         """Получить товары магазина с названиями"""
