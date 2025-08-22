@@ -189,6 +189,7 @@
 <body>
     <div class="header">
         <h1>🌾 Фермерская Игра</h1>
+        <div id="mode-info" style="font-size: 12px; opacity: 0.8; margin-bottom: 10px;"></div>
         <div class="weather-info">
             <span id="weather-emoji">🌤️</span>
             <span id="weather-text">Загрузка погоды...</span>
@@ -245,11 +246,24 @@
         tg.ready();
         tg.expand();
 
-        // Получение user_id из URL параметров или установка демо-значения
+        // Получение или генерация user_id
         const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('user_id') || '12345';
+        let userId = urlParams.get('user_id');
+        
+        // Если user_id не передан, генерируем уникальный ID или берем из localStorage
+        if (!userId) {
+            userId = localStorage.getItem('farming_game_user_id');
+            if (!userId) {
+                // Генерируем уникальный ID на основе времени и случайного числа
+                userId = 'demo_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+                localStorage.setItem('farming_game_user_id', userId);
+            }
+        }
         
         // Флаг для определения, работаем ли мы в демо-режиме
+        // Демо-режим включается если:
+        // 1. Нет user_id в URL (пользователь зашел напрямую на сайт)
+        // 2. Или это GitHub Pages
         const isDemoMode = !urlParams.get('user_id') || window.location.hostname === 'antoged.github.io';
 
         let currentTab = 'farm';
@@ -286,35 +300,55 @@
             }
         }
 
-        // Mock данные для демонстрации
-        const mockData = {
-            farm: {
-                plots: [
-                    { status: 'empty' },
-                    { status: 'planted', timeLeft: 45, seedType: 'carrot' },
-                    { status: 'ready', seedType: 'tomato' },
-                    { status: 'empty' },
-                    { status: 'planted', timeLeft: 120, seedType: 'potato' },
-                    { status: 'empty' }
-                ]
-            },
-            shop: {
-                items: [
-                    { seed_type: 'carrot', name: 'Морковь', emoji: '🥕', price: 10 },
-                    { seed_type: 'tomato', name: 'Помидор', emoji: '🍅', price: 25 },
-                    { seed_type: 'potato', name: 'Картошка', emoji: '🥔', price: 15 },
-                    { seed_type: 'cucumber', name: 'Огурец', emoji: '🥒', price: 20 }
-                ]
-            },
-            inventory: {
-                items: [
-                    { id: 1, item_type: 'carrot', name: 'Морковь', emoji: '🥕', price: 15, weight: 120, size: 18 },
-                    { id: 2, item_type: 'tomato', name: 'Помидор', emoji: '🍅', price: 35, weight: 180, size: 25 }
-                ]
-            },
-            stats: { money: 150, level: 2, inventory_count: 2 },
-            weather: { type: 'sunny', name: 'Солнечно', emoji: '☀️' }
-        };
+        // Функция для получения mock данных из localStorage или создания новых
+        function getMockData() {
+            const storageKey = `farming_game_data_${userId}`;
+            let mockData = JSON.parse(localStorage.getItem(storageKey) || 'null');
+            
+            // Если данных нет, создаем базовые
+            if (!mockData) {
+                mockData = {
+                    farm: {
+                        plots: [
+                            { status: 'empty' },
+                            { status: 'planted', timeLeft: 45, seedType: 'carrot' },
+                            { status: 'ready', seedType: 'tomato' },
+                            { status: 'empty' },
+                            { status: 'planted', timeLeft: 120, seedType: 'potato' },
+                            { status: 'empty' }
+                        ]
+                    },
+                    shop: {
+                        items: [
+                            { seed_type: 'carrot', name: 'Морковь', emoji: '🥕', price: 10 },
+                            { seed_type: 'tomato', name: 'Помидор', emoji: '🍅', price: 25 },
+                            { seed_type: 'potato', name: 'Картошка', emoji: '🥔', price: 15 },
+                            { seed_type: 'cucumber', name: 'Огурец', emoji: '🥒', price: 20 }
+                        ]
+                    },
+                    inventory: {
+                        items: [
+                            { id: 1, item_type: 'carrot', name: 'Морковь', emoji: '🥕', price: 15, weight: 120, size: 18 },
+                            { id: 2, item_type: 'tomato', name: 'Помидор', emoji: '🍅', price: 35, weight: 180, size: 25 }
+                        ]
+                    },
+                    stats: { money: 150, level: 2, inventory_count: 2 },
+                    weather: { type: 'sunny', name: 'Солнечно', emoji: '☀️' }
+                };
+                saveMockData(mockData);
+            }
+            
+            return mockData;
+        }
+        
+        // Функция для сохранения mock данных в localStorage
+        function saveMockData(data) {
+            const storageKey = `farming_game_data_${userId}`;
+            localStorage.setItem(storageKey, JSON.stringify(data));
+        }
+        
+        // Получаем актуальные mock данные
+        let mockData = getMockData();
 
         // Загрузка фермы
         async function loadFarm() {
@@ -417,6 +451,7 @@
                             seedType: seedType,
                             timeLeft: 60 // 1 минута для демо
                         };
+                        saveMockData(mockData); // Сохраняем изменения
                         tg.showAlert('🌱 Семена посажены! (Демо-режим)');
                         loadFarm();
                     } else {
@@ -473,6 +508,7 @@
                         mockData.stats.inventory_count = mockData.inventory.items.length;
                         mockData.stats.money += 5; // Бонус за сбор
                         
+                        saveMockData(mockData); // Сохраняем изменения
                         tg.showAlert('🌾 Урожай собран! (Демо-режим)');
                         loadFarm();
                         updateStats();
@@ -541,8 +577,18 @@
         async function buySeed(seedType) {
             try {
                 if (isDemoMode) {
-                    // Демо-режим: просто показываем сообщение
-                    tg.showAlert('🌱 Семена куплены! (Демо-режим)');
+                    // Демо-режим: проверяем деньги и покупаем семена
+                    const seed = mockData.shop.items.find(item => item.seed_type === seedType);
+                    if (seed && mockData.stats.money >= seed.price) {
+                        mockData.stats.money -= seed.price;
+                        saveMockData(mockData); // Сохраняем изменения
+                        tg.showAlert(`🌱 ${seed.name} куплены за ${seed.price} монет! (Демо-режим)`);
+                        updateStats();
+                    } else if (seed) {
+                        tg.showAlert(`❌ Недостаточно денег! Нужно: ${seed.price}, у вас: ${mockData.stats.money}`);
+                    } else {
+                        tg.showAlert('❌ Семена не найдены');
+                    }
                     return;
                 }
                 
@@ -616,13 +662,17 @@
             try {
                 if (isDemoMode) {
                     // Демо-режим: удаляем предмет из mock данных
-                    mockData.inventory.items = mockData.inventory.items.filter(item => item.id !== itemId);
-                    mockData.stats.money += 20; // Добавляем деньги
-                    mockData.stats.inventory_count = mockData.inventory.items.length;
-                    
-                    tg.showAlert('💰 Предмет продан! (Демо-режим)');
-                    loadInventory();
-                    updateStats();
+                    const item = mockData.inventory.items.find(item => item.id === itemId);
+                    if (item) {
+                        mockData.inventory.items = mockData.inventory.items.filter(item => item.id !== itemId);
+                        mockData.stats.money += item.price; // Добавляем деньги по цене предмета
+                        mockData.stats.inventory_count = mockData.inventory.items.length;
+                        
+                        saveMockData(mockData); // Сохраняем изменения
+                        tg.showAlert('💰 Предмет продан! (Демо-режим)');
+                        loadInventory();
+                        updateStats();
+                    }
                     return;
                 }
                 
@@ -706,8 +756,41 @@
             }
         }
 
+        // Отображение информации о режиме
+        function updateModeInfo() {
+            const modeInfo = document.getElementById('mode-info');
+            if (isDemoMode) {
+                const isNewUser = userId.startsWith('demo_');
+                const resetButton = '<button onclick="resetDemoData()" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:10px;margin-left:10px;">🔄 Новая игра</button>';
+                modeInfo.innerHTML = (isNewUser ? 
+                    `🎮 Демо-режим | ID: ${userId.slice(0, 20)}...` : 
+                    `🎮 Демо-режим | Telegram ID: ${userId}`) + resetButton;
+            } else {
+                modeInfo.textContent = `🔗 Подключен к серверу | ID: ${userId}`;
+            }
+        }
+        
+        // Функция сброса демо-данных
+        function resetDemoData() {
+            if (confirm('Вы уверены, что хотите начать новую игру? Весь прогресс будет потерян.')) {
+                const storageKey = `farming_game_data_${userId}`;
+                localStorage.removeItem(storageKey);
+                mockData = getMockData(); // Получаем новые данные
+                
+                // Обновляем все вкладки
+                loadFarm();
+                updateWeather();
+                updateStats();
+                if (currentTab === 'shop') loadShop();
+                if (currentTab === 'inventory') loadInventory();
+                
+                tg.showAlert('🎮 Новая игра начата!');
+            }
+        }
+
         // Инициализация приложения
         if (userId) {
+            updateModeInfo();
             loadFarm();
             updateWeather();
             updateStats();
