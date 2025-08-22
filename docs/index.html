@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌾 Farming Game - Antoged</title>
+    <meta name="description" content="Интерактивная фермерская игра в Telegram с веб-интерфейсом для управления фермой">
+    <meta name="keywords" content="фермерская игра, telegram bot, веб-игра, симулятор фермы, python">
+    <meta name="author" content="Antoged">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://antoged.github.io/farming/">
+    <meta property="og:title" content="🌾 Farming Game - Telegram Bot">
+    <meta property="og:description" content="Интерактивная фермерская игра в Telegram с веб-интерфейсом">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://antoged.github.io/farming/">
+    <meta property="twitter:title" content="🌾 Farming Game - Telegram Bot">
+    <meta property="twitter:description" content="Интерактивная фермерская игра в Telegram с веб-интерфейсом">
+    
     <style>
         * {
             margin: 0;
@@ -147,6 +163,44 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
+        .demo-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .demo-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .demo-item {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .demo-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .demo-item h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
         .footer {
             text-align: center;
             color: white;
@@ -166,7 +220,31 @@
             .features {
                 grid-template-columns: 1fr;
             }
+            
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
         }
+
+        /* Анимации */
+        .feature-card, .demo-item {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
     </style>
 </head>
 <body>
@@ -233,6 +311,28 @@
                     <span class="tech-item">HTML/CSS/JS</span>
                     <span class="tech-item">GitHub Actions</span>
                     <span class="tech-item">Flask</span>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h3>🎮 Как начать играть</h3>
+                <div class="demo-grid">
+                    <div class="demo-item">
+                        <h4>1️⃣ Найти бота</h4>
+                        <p>Найдите нашего бота в Telegram по имени @your_bot_username</p>
+                    </div>
+                    <div class="demo-item">
+                        <h4>2️⃣ Начать игру</h4>
+                        <p>Отправьте команду /start для начала игры</p>
+                    </div>
+                    <div class="demo-item">
+                        <h4>3️⃣ Управлять фермой</h4>
+                        <p>Используйте команды /farm, /market, /stats для управления</p>
+                    </div>
+                    <div class="demo-item">
+                        <h4>4️⃣ Веб-интерфейс</h4>
+                        <p>Откройте веб-интерфейс для расширенного управления</p>
+                    </div>
                 </div>
             </div>
 
