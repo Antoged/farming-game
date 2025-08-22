@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌾 Farming Game</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>🌾 Фермерская Игра | Играть онлайн</title>
+    <!-- Telegram Web App API убран - игра работает автономно -->
     <style>
         * {
             margin: 0;
@@ -241,10 +241,14 @@
     </div>
 
     <script>
-        // Инициализация Telegram Web App
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        // Создаем заглушку для tg объекта (для совместимости со старым кодом)
+        const tg = {
+            showAlert: function(message) {
+                alert(message);
+            },
+            ready: function() {},
+            expand: function() {}
+        };
 
         // Генерация или получение уникального user_id для каждого пользователя
         console.log('=== ИНИЦИАЛИЗАЦИЯ ФЕРМЕРСКОЙ ИГРЫ ===');
@@ -294,6 +298,7 @@
 
         // Переключение вкладок
         function switchTab(tabName) {
+            console.log('switchTab вызвана для:', tabName);
             currentTab = tabName;
             
             // Скрыть все вкладки
@@ -302,25 +307,44 @@
             });
             
             // Показать выбранную вкладку
-            document.getElementById(tabName + '-content').style.display = 'block';
+            const targetContent = document.getElementById(tabName + '-content');
+            if (targetContent) {
+                targetContent.style.display = 'block';
+                console.log('Показана вкладка:', tabName);
+            } else {
+                console.error('Не найдена вкладка с ID:', tabName + '-content');
+            }
             
             // Обновить активную вкладку
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            event.target.classList.add('active');
+            
+            // Найти и активировать правильную вкладку
+            const activeTab = document.querySelector(`[data-tab="${tabName}"]`) || 
+                             document.querySelector(`[onclick*="${tabName}"]`);
+            if (activeTab) {
+                activeTab.classList.add('active');
+                console.log('Активирована вкладка:', tabName);
+            }
             
             // Загрузить данные для вкладки
-            switch(tabName) {
-                case 'farm':
-                    loadFarm();
-                    break;
-                case 'shop':
-                    loadShop();
-                    break;
-                case 'inventory':
-                    loadInventory();
-                    break;
+            try {
+                switch(tabName) {
+                    case 'farm':
+                        loadFarm();
+                        break;
+                    case 'shop':
+                        loadShop();
+                        break;
+                    case 'inventory':
+                        loadInventory();
+                        break;
+                    default:
+                        console.warn('Неизвестная вкладка:', tabName);
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке данных для вкладки:', tabName, error);
             }
         }
 
@@ -419,9 +443,17 @@
 
         // Загрузка фермы
         async function loadFarm() {
+            console.log('loadFarm вызвана');
             try {
+                if (!mockData) {
+                    console.error('❌ mockData не инициализированы в loadFarm');
+                    document.getElementById('farm-grid').innerHTML = '<div class="error">Ошибка: данные игры не загружены</div>';
+                    return;
+                }
+                
                 // Используем локальные данные
                 const farmData = mockData.farm;
+                console.log('Данные фермы:', farmData);
                 
                 const farmGrid = document.getElementById('farm-grid');
                 farmGrid.innerHTML = '';
@@ -546,9 +578,17 @@
 
         // Загрузка магазина
         async function loadShop() {
+            console.log('loadShop вызвана');
             try {
+                if (!mockData) {
+                    console.error('❌ mockData не инициализированы в loadShop');
+                    document.getElementById('shop-items').innerHTML = '<div class="error">Ошибка: данные игры не загружены</div>';
+                    return;
+                }
+                
                 // Используем локальные данные
                 const shopData = mockData.shop;
+                console.log('Данные магазина:', shopData);
                 
                 const shopItems = document.getElementById('shop-items');
                 shopItems.innerHTML = '';
@@ -591,9 +631,17 @@
 
         // Загрузка инвентаря
         async function loadInventory() {
+            console.log('loadInventory вызвана');
             try {
+                if (!mockData) {
+                    console.error('❌ mockData не инициализированы в loadInventory');
+                    document.getElementById('inventory-items').innerHTML = '<div class="error">Ошибка: данные игры не загружены</div>';
+                    return;
+                }
+                
                 // Используем локальные данные
                 const inventoryData = mockData.inventory;
+                console.log('Данные инвентаря:', inventoryData);
                 
                 const inventoryItems = document.getElementById('inventory-items');
                 inventoryItems.innerHTML = '';

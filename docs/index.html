@@ -3,23 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌾 Farming Game - Antoged</title>
-    <meta name="description" content="Интерактивная фермерская игра в Telegram с веб-интерфейсом для управления фермой">
-    <meta name="keywords" content="фермерская игра, telegram bot, веб-игра, симулятор фермы, python">
-    <meta name="author" content="Antoged">
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://antoged.github.io/farming/">
-    <meta property="og:title" content="🌾 Farming Game - Telegram Bot">
-    <meta property="og:description" content="Интерактивная фермерская игра в Telegram с веб-интерфейсом">
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://antoged.github.io/farming/">
-    <meta property="twitter:title" content="🌾 Farming Game - Telegram Bot">
-    <meta property="twitter:description" content="Интерактивная фермерская игра в Telegram с веб-интерфейсом">
-    
+    <title>🌾 Фермерская Игра | Играть онлайн</title>
+    <!-- Telegram Web App API убран - игра работает автономно -->
     <style>
         * {
             margin: 0;
@@ -29,330 +14,779 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 16px;
         }
 
         .header {
             text-align: center;
-            color: white;
-            margin-bottom: 40px;
-            padding: 40px 20px;
-        }
-
-        .header h1 {
-            font-size: 3.5rem;
             margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            padding: 16px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
         }
 
-        .header p {
-            font-size: 1.3rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .main-content {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            margin-bottom: 40px;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin: 40px 0;
-        }
-
-        .feature-card {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 15px;
-            border-left: 5px solid #667eea;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .feature-card h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.4rem;
-        }
-
-        .tech-stack {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 15px;
-            margin: 30px 0;
-        }
-
-        .tech-stack h3 {
-            color: #667eea;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .tech-items {
+        .weather-info {
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
+            align-items: center;
             justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
-        .tech-item {
-            background: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            border: 2px solid #667eea;
-            color: #667eea;
-            font-weight: 500;
-            transition: all 0.3s ease;
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
-        .tech-item:hover {
-            background: #667eea;
+        .stat-card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tab.active {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+
+        .content {
+            min-height: 400px;
+        }
+
+        .farm-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .plot {
+            aspect-ratio: 1;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .plot:hover {
+            background: var(--tg-theme-hint-color, #999999);
+        }
+
+        .plot.planted {
+            background: #4CAF50;
             color: white;
-            transform: scale(1.05);
         }
 
-        .cta-section {
+        .plot.ready {
+            background: #FF9800;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        .plot-info {
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .shop-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .shop-item {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .shop-item button {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .inventory-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .inventory-item {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .inventory-item button {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .loading {
             text-align: center;
             padding: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 20px;
-            margin: 40px 0;
+            color: var(--tg-theme-hint-color, #999999);
         }
 
-        .cta-section h3 {
-            font-size: 2rem;
-            margin-bottom: 20px;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
-        .cta-button {
-            display: inline-block;
-            background: white;
-            color: #667eea;
-            padding: 15px 30px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            margin: 10px;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-
-        .demo-section {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 15px;
-            margin: 30px 0;
-        }
-
-        .demo-section h3 {
-            color: #667eea;
-            margin-bottom: 20px;
+        .error {
+            color: #f44336;
             text-align: center;
-        }
-
-        .demo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .demo-item {
-            background: white;
             padding: 20px;
-            border-radius: 15px;
+        }
+
+        .success {
+            color: #4CAF50;
             text-align: center;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
-        }
-
-        .demo-item:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-        }
-
-        .demo-item h4 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .footer {
-            text-align: center;
-            color: white;
             padding: 20px;
-            opacity: 0.8;
         }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2.5rem;
-            }
-            
-            .main-content {
-                padding: 20px;
-            }
-            
-            .features {
-                grid-template-columns: 1fr;
-            }
-            
-            .demo-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Анимации */
-        .feature-card, .demo-item {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .feature-card:nth-child(1) { animation-delay: 0.1s; }
-        .feature-card:nth-child(2) { animation-delay: 0.2s; }
-        .feature-card:nth-child(3) { animation-delay: 0.3s; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🌾 Farming Game</h1>
-            <p>Инновационная игра-ферма, разработанная на Python с интеграцией Telegram Bot API</p>
-        </div>
-
-        <div class="main-content">
-            <h2 style="text-align: center; color: #667eea; margin-bottom: 30px; font-size: 2.5rem;">
-                🎮 О проекте
-            </h2>
-            
-            <p style="text-align: center; font-size: 1.2rem; margin-bottom: 40px; color: #666;">
-                Добро пожаловать в мир Farming Game! Это уникальная игра-ферма, которая объединяет 
-                классический геймплей с современными технологиями и удобным управлением через Telegram.
-            </p>
-
-            <div class="features">
-                <div class="feature-card">
-                    <h3>🚀 Основные возможности</h3>
-                    <ul style="list-style: none; padding-left: 0;">
-                        <li>✅ Управление фермой через Telegram</li>
-                        <li>✅ Выращивание различных культур</li>
-                        <li>✅ Система экономики и торговли</li>
-                        <li>✅ Многопользовательский режим</li>
-                        <li>✅ Реалистичная система погоды</li>
-                        <li>✅ Разнообразные инструменты и улучшения</li>
-                    </ul>
-                </div>
-
-                <div class="feature-card">
-                    <h3>🎯 Особенности игры</h3>
-                    <ul style="list-style: none; padding-left: 0;">
-                        <li>🌱 9 грядок для выращивания</li>
-                        <li>🌾 6 типов культур</li>
-                        <li>💰 Система монет и торговли</li>
-                        <li>🛠️ 4 типа инструментов</li>
-                        <li>🌤️ Динамическая погода</li>
-                        <li>📊 Детальная статистика</li>
-                    </ul>
-                </div>
-
-                <div class="feature-card">
-                    <h3>🔧 Технические детали</h3>
-                    <ul style="list-style: none; padding-left: 0;">
-                        <li>🐍 Написано на Python</li>
-                        <li>🤖 Telegram Bot API</li>
-                        <li>🗄️ SQLite база данных</li>
-                        <li>🌐 Веб-интерфейс</li>
-                        <li>📱 Адаптивный дизайн</li>
-                        <li>🚀 CI/CD с GitHub Actions</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="tech-stack">
-                <h3>🛠️ Технологический стек</h3>
-                <div class="tech-items">
-                    <span class="tech-item">Python</span>
-                    <span class="tech-item">Telegram Bot API</span>
-                    <span class="tech-item">SQLite</span>
-                    <span class="tech-item">HTML/CSS/JS</span>
-                    <span class="tech-item">GitHub Actions</span>
-                    <span class="tech-item">Flask</span>
-                </div>
-            </div>
-
-            <div class="demo-section">
-                <h3>🎮 Как начать играть</h3>
-                <div class="demo-grid">
-                    <div class="demo-item">
-                        <h4>1️⃣ Найти бота</h4>
-                        <p>Найдите нашего бота в Telegram по имени @your_bot_username</p>
-                    </div>
-                    <div class="demo-item">
-                        <h4>2️⃣ Начать игру</h4>
-                        <p>Отправьте команду /start для начала игры</p>
-                    </div>
-                    <div class="demo-item">
-                        <h4>3️⃣ Управлять фермой</h4>
-                        <p>Используйте команды /farm, /market, /stats для управления</p>
-                    </div>
-                    <div class="demo-item">
-                        <h4>4️⃣ Веб-интерфейс</h4>
-                        <p>Откройте веб-интерфейс для расширенного управления</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="cta-section">
-                <h3>🚀 Готовы начать играть?</h3>
-                <p style="margin-bottom: 30px; font-size: 1.1rem;">
-                    Присоединяйтесь к сообществу фермеров и создайте свою процветающую ферму!
-                </p>
-                <a href="https://github.com/antoged/farming" class="cta-button" target="_blank">
-                    📚 Исходный код
-                </a>
-                <a href="README.md" class="cta-button">
-                    📖 Документация
-                </a>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>© 2024 Farming Game. Разработано с ❤️ командой Antoged</p>
+    <div class="header">
+        <h1>🌾 Фермерская Игра</h1>
+        <div id="mode-info" style="font-size: 12px; opacity: 0.8; margin-bottom: 10px;"></div>
+        <div class="weather-info">
+            <span id="weather-emoji">🌤️</span>
+            <span id="weather-text">Загрузка погоды...</span>
         </div>
     </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div>💰 Монеты</div>
+            <div id="money">0</div>
+        </div>
+        <div class="stat-card">
+            <div>📊 Уровень</div>
+            <div id="level">1</div>
+        </div>
+        <div class="stat-card">
+            <div>📦 Инвентарь</div>
+            <div id="inventory-count">0</div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('farm')">🌱 Ферма</div>
+        <div class="tab" onclick="switchTab('shop')">🛒 Магазин</div>
+        <div class="tab" onclick="switchTab('inventory')">📦 Инвентарь</div>
+    </div>
+
+    <div class="content">
+        <!-- Ферма -->
+        <div id="farm-content" class="tab-content">
+            <div class="farm-grid" id="farm-grid">
+                <div class="loading">Загрузка фермы...</div>
+            </div>
+        </div>
+
+        <!-- Магазин -->
+        <div id="shop-content" class="tab-content" style="display: none;">
+            <div class="shop-items" id="shop-items">
+                <div class="loading">Загрузка магазина...</div>
+            </div>
+        </div>
+
+        <!-- Инвентарь -->
+        <div id="inventory-content" class="tab-content" style="display: none;">
+            <div class="inventory-items" id="inventory-items">
+                <div class="loading">Загрузка инвентаря...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Создаем заглушку для tg объекта (для совместимости со старым кодом)
+        const tg = {
+            showAlert: function(message) {
+                alert(message);
+            },
+            ready: function() {},
+            expand: function() {}
+        };
+
+        // Генерация или получение уникального user_id для каждого пользователя
+        console.log('=== ИНИЦИАЛИЗАЦИЯ ФЕРМЕРСКОЙ ИГРЫ ===');
+        console.log('Проверяем localStorage...');
+        
+        let userId = localStorage.getItem('farming_game_user_id');
+        console.log('Загруженный userId из localStorage:', userId);
+        
+        // Если ID еще нет, генерируем новый уникальный ID
+        if (!userId) {
+            console.log('userId не найден, генерируем новый...');
+            
+            try {
+                // Генерируем уникальный ID на основе времени, случайного числа и хеша браузера
+                const browserFingerprint = navigator.userAgent.length + screen.width + screen.height;
+                userId = 'user_' + Date.now() + '_' + Math.floor(Math.random() * 10000) + '_' + (browserFingerprint % 1000);
+                
+                console.log('Сгенерирован новый userId:', userId);
+                console.log('Сохраняем в localStorage...');
+                
+                localStorage.setItem('farming_game_user_id', userId);
+                
+                // Проверяем, что сохранилось
+                const savedUserId = localStorage.getItem('farming_game_user_id');
+                console.log('Проверка сохранения - загруженный userId:', savedUserId);
+                
+                if (savedUserId !== userId) {
+                    throw new Error('localStorage не работает корректно');
+                }
+                
+                console.log('✅ userId успешно сгенерирован и сохранен');
+                
+            } catch (error) {
+                console.error('❌ ОШИБКА генерации userId:', error);
+                userId = 'fallback_' + Math.random().toString(36).substr(2, 9);
+                console.log('Используем fallback userId:', userId);
+            }
+        } else {
+            console.log('✅ userId загружен из localStorage:', userId);
+        }
+        
+        // Всегда работаем в демо-режиме с локальными данными
+        // (можно добавить API-режим в будущем через настройки)
+        const isDemoMode = true;
+
+        let currentTab = 'farm';
+
+        // Переключение вкладок
+        function switchTab(tabName) {
+            console.log('switchTab вызвана для:', tabName);
+            currentTab = tabName;
+            
+            // Скрыть все вкладки
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Показать выбранную вкладку
+            const targetContent = document.getElementById(tabName + '-content');
+            if (targetContent) {
+                targetContent.style.display = 'block';
+                console.log('Показана вкладка:', tabName);
+            } else {
+                console.error('Не найдена вкладка с ID:', tabName + '-content');
+            }
+            
+            // Обновить активную вкладку
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Найти и активировать правильную вкладку
+            const activeTab = document.querySelector(`[data-tab="${tabName}"]`) || 
+                             document.querySelector(`[onclick*="${tabName}"]`);
+            if (activeTab) {
+                activeTab.classList.add('active');
+                console.log('Активирована вкладка:', tabName);
+            }
+            
+            // Загрузить данные для вкладки
+            try {
+                switch(tabName) {
+                    case 'farm':
+                        loadFarm();
+                        break;
+                    case 'shop':
+                        loadShop();
+                        break;
+                    case 'inventory':
+                        loadInventory();
+                        break;
+                    default:
+                        console.warn('Неизвестная вкладка:', tabName);
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке данных для вкладки:', tabName, error);
+            }
+        }
+
+        // Функция для получения mock данных из localStorage или создания новых
+        function getMockData() {
+            console.log('getMockData вызвана с userId:', userId);
+            
+            if (!userId) {
+                console.error('❌ ОШИБКА: userId пустой в getMockData!');
+                return null;
+            }
+            
+            const storageKey = `farming_game_data_${userId}`;
+            console.log('Ключ хранилища:', storageKey);
+            
+            let mockData = JSON.parse(localStorage.getItem(storageKey) || 'null');
+            console.log('Загруженные данные из localStorage:', mockData ? 'найдены' : 'не найдены');
+            
+            // Если данных нет, создаем базовые
+            if (!mockData) {
+                console.log('Создаем новые базовые данные...');
+                mockData = {
+                    farm: {
+                        plots: [
+                            { status: 'empty' },
+                            { status: 'planted', timeLeft: 45, seedType: 'carrot' },
+                            { status: 'ready', seedType: 'tomato' },
+                            { status: 'empty' },
+                            { status: 'planted', timeLeft: 120, seedType: 'potato' },
+                            { status: 'empty' }
+                        ]
+                    },
+                    shop: {
+                        items: [
+                            { seed_type: 'carrot', name: 'Морковь', emoji: '🥕', price: 10 },
+                            { seed_type: 'tomato', name: 'Помидор', emoji: '🍅', price: 25 },
+                            { seed_type: 'potato', name: 'Картошка', emoji: '🥔', price: 15 },
+                            { seed_type: 'cucumber', name: 'Огурец', emoji: '🥒', price: 20 }
+                        ]
+                    },
+                    inventory: {
+                        items: [
+                            { id: 1, item_type: 'carrot', name: 'Морковь', emoji: '🥕', price: 15, weight: 120, size: 18 },
+                            { id: 2, item_type: 'tomato', name: 'Помидор', emoji: '🍅', price: 35, weight: 180, size: 25 }
+                        ]
+                    },
+                    stats: { money: 150, level: 2, inventory_count: 2 },
+                    weather: { type: 'sunny', name: 'Солнечно', emoji: '☀️' }
+                };
+                console.log('Базовые данные созданы');
+                saveMockData(mockData);
+                console.log('Базовые данные сохранены');
+            }
+            
+            console.log('Возвращаем данные:', mockData ? 'успешно' : 'ошибка');
+            return mockData;
+        }
+        
+        // Функция для сохранения mock данных в localStorage
+        function saveMockData(data) {
+            console.log('saveMockData вызвана с userId:', userId);
+            
+            if (!userId) {
+                console.error('❌ ОШИБКА: userId пустой в saveMockData!');
+                return;
+            }
+            
+            const storageKey = `farming_game_data_${userId}`;
+            console.log('Сохраняем данные по ключу:', storageKey);
+            
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(data));
+                console.log('✅ Данные сохранены успешно');
+            } catch (error) {
+                console.error('❌ ОШИБКА сохранения данных:', error);
+            }
+        }
+        
+        // Получаем актуальные mock данные
+        console.log('Инициализируем mockData...');
+        let mockData = getMockData();
+        
+        if (!mockData) {
+            console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: не удалось инициализировать игровые данные!');
+            document.body.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: red;">
+                    <h2>❌ Ошибка загрузки игры</h2>
+                    <p>Не удалось инициализировать игровые данные.</p>
+                    <p>Возможно, localStorage заблокирован в вашем браузере.</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; font-size: 16px;">🔄 Перезагрузить</button>
+                </div>
+            `;
+        } else {
+            console.log('✅ mockData успешно инициализированы');
+        }
+
+        // Загрузка фермы
+        async function loadFarm() {
+            console.log('loadFarm вызвана');
+            try {
+                if (!mockData) {
+                    console.error('❌ mockData не инициализированы в loadFarm');
+                    document.getElementById('farm-grid').innerHTML = '<div class="error">Ошибка: данные игры не загружены</div>';
+                    return;
+                }
+                
+                // Используем локальные данные
+                const farmData = mockData.farm;
+                console.log('Данные фермы:', farmData);
+                
+                const farmGrid = document.getElementById('farm-grid');
+                farmGrid.innerHTML = '';
+                
+                farmData.plots.forEach((plot, index) => {
+                    const plotElement = document.createElement('div');
+                    plotElement.className = `plot ${plot.status}`;
+                    plotElement.onclick = () => handlePlotClick(index);
+                    
+                    let plotContent = '';
+                    if (plot.status === 'empty') {
+                        plotContent = '🌱';
+                    } else if (plot.status === 'planted') {
+                        plotContent = '🌿';
+                    } else if (plot.status === 'ready') {
+                        plotContent = '🌾';
+                    }
+                    
+                    plotElement.innerHTML = `
+                        <div class="plot-info">
+                            ${plotContent}
+                            ${plot.status === 'planted' ? `<br><small>${plot.timeLeft || 0}s</small>` : ''}
+                        </div>
+                    `;
+                    
+                    farmGrid.appendChild(plotElement);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки фермы:', error);
+                document.getElementById('farm-grid').innerHTML = '<div class="error">Ошибка загрузки фермы</div>';
+            }
+        }
+
+        // Обработка клика по участку
+        async function handlePlotClick(plotId) {
+            try {
+                // Используем локальные данные
+                const plots = { plots: mockData.farm.plots };
+                
+                const plot = plots.plots[plotId];
+                
+                if (plot.status === 'empty') {
+                    // Показать выбор семян
+                    const seedType = prompt('Выберите семена для посадки:\n1. Морковь\n2. Помидор\n3. Картошка\n4. Огурец\n5. Клубника\n6. Арбуз\n7. Золотое яблоко');
+                    
+                    if (seedType) {
+                        const seedMap = {
+                            '1': 'carrot', '2': 'tomato', '3': 'potato', '4': 'cucumber',
+                            '5': 'strawberry', '6': 'watermelon', '7': 'golden_apple'
+                        };
+                        
+                        if (seedMap[seedType]) {
+                            await plantSeed(plotId, seedMap[seedType]);
+                        }
+                    }
+                } else if (plot.status === 'ready') {
+                    // Собрать урожай
+                    await harvestPlot(plotId);
+                }
+            } catch (error) {
+                tg.showAlert('Ошибка обработки участка');
+            }
+        }
+
+        // Посадка семян
+        async function plantSeed(plotId, seedType) {
+            try {
+                // Обновляем локальные данные
+                if (mockData.farm.plots[plotId].status === 'empty') {
+                    mockData.farm.plots[plotId] = {
+                        status: 'planted',
+                        seedType: seedType,
+                        timeLeft: 60 // 1 минута
+                    };
+                    saveMockData(mockData); // Сохраняем изменения
+                    tg.showAlert('🌱 Семена посажены!');
+                    loadFarm();
+                } else {
+                    tg.showAlert('❌ Участок уже занят');
+                }
+            } catch (error) {
+                tg.showAlert('❌ Ошибка посадки');
+            }
+        }
+
+        // Сбор урожая
+        async function harvestPlot(plotId) {
+            try {
+                // Обновляем локальные данные
+                if (mockData.farm.plots[plotId].status === 'ready') {
+                    const seedType = mockData.farm.plots[plotId].seedType || 'carrot';
+                    
+                    // Очищаем участок
+                    mockData.farm.plots[plotId] = { status: 'empty' };
+                    
+                    // Добавляем в инвентарь
+                    const newItem = {
+                        id: Date.now(),
+                        item_type: seedType,
+                        name: mockData.shop.items.find(i => i.seed_type === seedType)?.name || 'Урожай',
+                        emoji: mockData.shop.items.find(i => i.seed_type === seedType)?.emoji || '🌱',
+                        price: Math.floor(Math.random() * 30) + 15,
+                        weight: Math.floor(Math.random() * 100) + 50,
+                        size: Math.floor(Math.random() * 20) + 10
+                    };
+                    
+                    mockData.inventory.items.push(newItem);
+                    mockData.stats.inventory_count = mockData.inventory.items.length;
+                    mockData.stats.money += 5; // Бонус за сбор
+                    
+                    saveMockData(mockData); // Сохраняем изменения
+                    tg.showAlert('🌾 Урожай собран!');
+                    loadFarm();
+                    updateStats();
+                } else {
+                    tg.showAlert('❌ Урожай не готов');
+                }
+            } catch (error) {
+                tg.showAlert('❌ Ошибка сбора урожая');
+            }
+        }
+
+        // Загрузка магазина
+        async function loadShop() {
+            console.log('loadShop вызвана');
+            try {
+                if (!mockData) {
+                    console.error('❌ mockData не инициализированы в loadShop');
+                    document.getElementById('shop-items').innerHTML = '<div class="error">Ошибка: данные игры не загружены</div>';
+                    return;
+                }
+                
+                // Используем локальные данные
+                const shopData = mockData.shop;
+                console.log('Данные магазина:', shopData);
+                
+                const shopItems = document.getElementById('shop-items');
+                shopItems.innerHTML = '';
+                
+                shopData.items.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'shop-item';
+                    itemElement.innerHTML = `
+                        <div>${item.emoji} ${item.name}</div>
+                        <div>💰 ${item.price}</div>
+                        <button onclick="buySeed('${item.seed_type}')">Купить</button>
+                    `;
+                    shopItems.appendChild(itemElement);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки магазина:', error);
+                document.getElementById('shop-items').innerHTML = '<div class="error">Ошибка загрузки магазина</div>';
+            }
+        }
+
+        // Покупка семян
+        async function buySeed(seedType) {
+            try {
+                // Проверяем деньги и покупаем семена
+                const seed = mockData.shop.items.find(item => item.seed_type === seedType);
+                if (seed && mockData.stats.money >= seed.price) {
+                    mockData.stats.money -= seed.price;
+                    saveMockData(mockData); // Сохраняем изменения
+                    tg.showAlert(`🌱 ${seed.name} куплены за ${seed.price} монет!`);
+                    updateStats();
+                } else if (seed) {
+                    tg.showAlert(`❌ Недостаточно денег! Нужно: ${seed.price}, у вас: ${mockData.stats.money}`);
+                } else {
+                    tg.showAlert('❌ Семена не найдены');
+                }
+            } catch (error) {
+                tg.showAlert('❌ Ошибка покупки');
+            }
+        }
+
+        // Загрузка инвентаря
+        async function loadInventory() {
+            console.log('loadInventory вызвана');
+            try {
+                if (!mockData) {
+                    console.error('❌ mockData не инициализированы в loadInventory');
+                    document.getElementById('inventory-items').innerHTML = '<div class="error">Ошибка: данные игры не загружены</div>';
+                    return;
+                }
+                
+                // Используем локальные данные
+                const inventoryData = mockData.inventory;
+                console.log('Данные инвентаря:', inventoryData);
+                
+                const inventoryItems = document.getElementById('inventory-items');
+                inventoryItems.innerHTML = '';
+                
+                if (inventoryData.items.length === 0) {
+                    inventoryItems.innerHTML = '<div class="loading">Инвентарь пуст</div>';
+                    return;
+                }
+                
+                inventoryData.items.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'inventory-item';
+                    itemElement.innerHTML = `
+                        <div>${item.emoji} ${item.name}</div>
+                        <div>💰 ${item.price}</div>
+                        <div>📏 ${item.weight}г, ${item.size}см</div>
+                        <button onclick="sellItem(${item.id})">Продать</button>
+                    `;
+                    inventoryItems.appendChild(itemElement);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки инвентаря:', error);
+                document.getElementById('inventory-items').innerHTML = '<div class="error">Ошибка загрузки инвентаря</div>';
+            }
+        }
+
+        // Продажа предмета
+        async function sellItem(itemId) {
+            try {
+                // Удаляем предмет из локальных данных
+                const item = mockData.inventory.items.find(item => item.id === itemId);
+                if (item) {
+                    mockData.inventory.items = mockData.inventory.items.filter(item => item.id !== itemId);
+                    mockData.stats.money += item.price; // Добавляем деньги по цене предмета
+                    mockData.stats.inventory_count = mockData.inventory.items.length;
+                    
+                    saveMockData(mockData); // Сохраняем изменения
+                    tg.showAlert('💰 Предмет продан!');
+                    loadInventory();
+                    updateStats();
+                }
+            } catch (error) {
+                tg.showAlert('❌ Ошибка продажи');
+            }
+        }
+
+        // Обновление статистики
+        async function updateStats() {
+            try {
+                // Используем локальные данные
+                const stats = mockData.stats;
+                
+                document.getElementById('money').textContent = stats.money || 100;
+                document.getElementById('level').textContent = stats.level || 1;
+                document.getElementById('inventory-count').textContent = stats.inventory_count || 0;
+            } catch (error) {
+                console.error('Ошибка обновления статистики:', error);
+                // Показываем базовые значения в случае ошибки
+                document.getElementById('money').textContent = '100';
+                document.getElementById('level').textContent = '1';
+                document.getElementById('inventory-count').textContent = '0';
+            }
+        }
+
+        // Обновление погоды
+        async function updateWeather() {
+            try {
+                // Используем локальные данные
+                const weather = mockData.weather;
+                
+                const emoji = {
+                    'sunny': '☀️',
+                    'rainy': '🌧️',
+                    'cloudy': '☁️',
+                    'stormy': '⛈️',
+                    'normal': '🌤️'
+                }[weather.type] || '🌤️';
+                
+                document.getElementById('weather-emoji').textContent = weather.emoji || emoji;
+                document.getElementById('weather-text').textContent = weather.name || 'Обычная погода';
+            } catch (error) {
+                console.error('Ошибка обновления погоды:', error);
+                // Показываем базовые значения в случае ошибки
+                document.getElementById('weather-emoji').textContent = '🌤️';
+                document.getElementById('weather-text').textContent = 'Обычная погода';
+            }
+        }
+
+        // Отображение информации о режиме
+        function updateModeInfo() {
+            const modeInfo = document.getElementById('mode-info');
+            const resetButton = '<button onclick="resetDemoData()" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:10px;margin-left:10px;">🔄 Новая игра</button>';
+            const shortId = userId.length > 25 ? userId.slice(0, 25) + '...' : userId;
+            modeInfo.innerHTML = `🎮 Игровой ID: ${shortId}${resetButton}`;
+        }
+        
+        // Функция сброса игровых данных
+        function resetDemoData() {
+            if (confirm('Вы уверены, что хотите начать новую игру? Весь прогресс будет потерян.')) {
+                const storageKey = `farming_game_data_${userId}`;
+                localStorage.removeItem(storageKey);
+                mockData = getMockData(); // Получаем новые данные
+                
+                // Обновляем все вкладки
+                loadFarm();
+                updateWeather();
+                updateStats();
+                if (currentTab === 'shop') loadShop();
+                if (currentTab === 'inventory') loadInventory();
+                
+                tg.showAlert('🎮 Новая игра начата!');
+            }
+        }
+
+        // Инициализация приложения
+        console.log('Инициализация игры с userId:', userId);
+        
+        // Проверяем, что userId был успешно сгенерирован
+        if (!userId) {
+            console.error('КРИТИЧЕСКАЯ ОШИБКА: userId не был сгенерирован!');
+            document.body.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: red;">
+                    <h2>❌ Ошибка инициализации</h2>
+                    <p>Не удалось сгенерировать уникальный ID пользователя.</p>
+                    <p>Попробуйте перезагрузить страницу или очистить данные браузера.</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; font-size: 16px;">🔄 Перезагрузить</button>
+                </div>
+            `;
+            return;
+        }
+        
+        // Инициализируем игру
+        updateModeInfo();
+        loadFarm();
+        updateWeather();
+        updateStats();
+
+        // Автообновление каждые 30 секунд
+        setInterval(() => {
+            if (currentTab === 'farm') {
+                loadFarm();
+            }
+            updateWeather();
+            updateStats();
+        }, 30000);
+    </script>
 </body>
 </html>
