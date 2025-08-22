@@ -42,6 +42,12 @@ class Database:
                 )
             ''')
             
+            # Проверить и добавить колонку status, если её нет
+            cursor.execute("PRAGMA table_info(farm_plots)")
+            columns = [column[1] for column in cursor.fetchall()]
+            if 'status' not in columns:
+                cursor.execute('ALTER TABLE farm_plots ADD COLUMN status TEXT DEFAULT "empty"')
+            
             # Таблица инвентаря (собранные плоды)
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS inventory (
