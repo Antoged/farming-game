@@ -35,12 +35,6 @@ class GameLogic:
         if seed_type not in SEEDS:
             return False, "Неизвестный тип семечка"
         
-        # Проверить, что участок свободен
-        plots = self.db.get_farm_plots(user_id)
-        for plot in plots:
-            if plot['plot_id'] == plot_id:
-                return False, "Участок уже занят"
-        
         # Получить данные семечка
         seed_data = SEEDS[seed_type]
         
@@ -52,9 +46,12 @@ class GameLogic:
         growth_time = int(seed_data['growth_time'] / weather_multiplier)
         
         # Посадить семечко
-        self.db.plant_seed(user_id, plot_id, seed_type, growth_time)
+        success, message = self.db.plant_seed(user_id, plot_id, seed_type, growth_time)
         
-        return True, f"Посажено {seed_data['name']} на участок {plot_id}"
+        if success:
+            return True, f"Посажено {seed_data['name']} на участок {plot_id}"
+        else:
+            return False, message
     
     def harvest_plot(self, user_id, plot_id):
         """Собрать урожай с участка"""
@@ -62,12 +59,7 @@ class GameLogic:
         
         for plot in plots:
             if plot['plot_id'] == plot_id:
-                # Проверить, готов ли урожай
-                planted_time = datetime.fromisoformat(plot['planted_at'].replace('Z', '+00:00'))
-                current_time = datetime.now()
-                growth_time = timedelta(seconds=plot['growth_time'])
-                
-                if current_time - planted_time >= growth_time:
+                if plot['status'] == 'ready':
                     # Собрать урожай
                     seed_type = plot['seed_type']
                     
@@ -88,15 +80,30 @@ class GameLogic:
                         harvest['price']
                     )
                     
-                    # Удалить с участка
-                    self.db.harvest_plot(plot['id'])
+                    # Очистить участок
+                    success, message = self.db.harvest_plot(plot['id'])
                     
-                    return True, f"Собран урожай: {SEEDS[seed_type]['name']} (Цена: {harvest['price']} монет)"
+                    if success:
+                        return True, f"Собран урожай: {SEEDS[seed_type]['name']} (Цена: {harvest['price']} монет)"
+                    else:
+                        return False, message
+                elif plot['status'] == 'planted':
+                    # Проверить, готов ли урожай
+                    planted_time = datetime.fromisoformat(plot['planted_at'].replace('Z', '+00:00'))
+                    current_time = datetime.now()
+                    growth_time = timedelta(seconds=plot['growth_time'])
+                    
+                    if current_time - planted_time >= growth_time:
+                        # Урожай готов, обновить статус
+                        self.db.update_plot_status(plot['id'], 'ready')
+                        return False, "Урожай готов к сбору! Нажмите кнопку 'Собрать'"
+                    else:
+                        remaining_time = growth_time - (current_time - planted_time)
+                        return False, f"Урожай еще не готов. Осталось: {int(remaining_time.total_seconds())} секунд"
                 else:
-                    remaining_time = growth_time - (current_time - planted_time)
-                    return False, f"Урожай еще не готов. Осталось: {int(remaining_time.total_seconds())} секунд"
+                    return False, "Участок пуст"
         
-        return False, "Участок пуст"
+        return False, "Участок не найден"
     
     def get_farm_status(self, user_id):
         """Получить статус фермы"""
@@ -105,77 +112,90 @@ class GameLogic:
         
         farm_status = []
         for plot in plots:
-            if plot['status'] == 'empty':
-                farm_status.append({
-                    'plot_id': plot['plot_id'],
-                    'seed_type': None,
-                    'seed_name': None,
-                    'status': 'empty',
-                    'progress': 0
-                })
-            elif plot['status'] == 'planted':
+            if plot['status'] == 'planted':
+                # Рассчитать оставшееся время роста
                 planted_time = datetime.fromisoformat(plot['planted_at'].replace('Z', '+00:00'))
                 growth_time = timedelta(seconds=plot['growth_time'])
-                time_passed = current_time - planted_time
+                time_remaining = growth_time - (current_time - planted_time)
                 
-                if time_passed >= growth_time:
-                    status = "ready"
-                    progress = 100
-                    time_left = 0
+                if time_remaining.total_seconds() <= 0:
+                    # Урожай готов
+                    plot['status'] = 'ready'
+                    plot['time_remaining'] = 0
+                    plot['is_ready'] = True
+                    # Обновить статус в базе
+                    self.db.update_plot_status(plot['id'], 'ready')
                 else:
-                    progress = min(100, (time_passed.total_seconds() / plot['growth_time']) * 100)
-                    remaining_time = growth_time - time_passed
-                    status = "planted"
-                    time_left = int(remaining_time.total_seconds())
-                
-                farm_status.append({
-                    'plot_id': plot['plot_id'],
-                    'seed_type': plot['seed_type'],
-                    'seed_name': SEEDS[plot['seed_type']]['name'],
-                    'status': status,
-                    'progress': round(progress, 1),
-                    'time_left': time_left
-                })
-            elif plot['status'] == 'ready':
-                farm_status.append({
-                    'plot_id': plot['plot_id'],
-                    'seed_type': plot['seed_type'],
-                    'seed_name': SEEDS[plot['seed_type']]['name'],
-                    'status': 'ready',
-                    'progress': 100,
-                    'time_left': 0
-                })
+                    plot['time_remaining'] = int(time_remaining.total_seconds())
+                    plot['is_ready'] = False
+            else:
+                plot['time_remaining'] = 0
+                plot['is_ready'] = False
+            
+            # Добавить название семени
+            if plot['seed_type']:
+                plot['seed_name'] = SEEDS[plot['seed_type']]['name']
+            
+            farm_status.append(plot)
         
         return farm_status
     
     def buy_seed(self, user_id, seed_type):
-        """Купить семечко в магазине"""
+        """Купить семечко"""
+        if seed_type not in SEEDS:
+            return False, "Неизвестный тип семечка"
+        
+        # Получить товары магазина
         shop_items = self.db.get_shop_items()
+        target_item = None
         
         for item in shop_items:
             if item['seed_type'] == seed_type:
-                # Проверить, хватает ли денег
-                player = self.db.get_or_create_player(user_id)
-                if player['money'] >= item['price']:
-                    # Купить семечко
-                    self.db.update_player_money(user_id, -item['price'])
-                    return True, f"Куплено {SEEDS[seed_type]['name']} за {item['price']} монет"
-                else:
-                    return False, "Недостаточно денег"
+                target_item = item
+                break
         
-        return False, "Товар не найден в магазине"
+        if not target_item:
+            return False, "Семечко не найдено в магазине"
+        
+        # Получить игрока
+        player = self.db.get_or_create_player(user_id)
+        
+        if player['money'] < target_item['price']:
+            return False, f"Недостаточно денег. Нужно: {target_item['price']}, у вас: {player['money']}"
+        
+        # Купить семечко
+        success = self.db.buy_seed(user_id, seed_type, target_item['price'])
+        
+        if success:
+            return True, f"Куплено {SEEDS[seed_type]['name']} за {target_item['price']} монет"
+        else:
+            return False, "Ошибка при покупке"
     
     def sell_item(self, user_id, item_id):
         """Продать предмет из инвентаря"""
+        # Получить предмет из инвентаря
+        inventory = self.db.get_inventory(user_id)
+        target_item = None
+        
+        for item in inventory:
+            if item['id'] == item_id:
+                target_item = item
+                break
+        
+        if not target_item:
+            return False, "Предмет не найден в инвентаре"
+        
+        # Продать предмет
         price = self.db.sell_item(item_id)
+        
         if price > 0:
             return True, f"Предмет продан за {price} монет"
         else:
-            return False, "Предмет не найден"
+            return False, "Ошибка при продаже"
     
     def refresh_shop(self):
         """Обновить магазин"""
-        # Очистить просроченные товары
+        # Очистить старые товары
         self.db.clear_expired_shop_items()
         
         # Добавить новые товары
@@ -183,12 +203,13 @@ class GameLogic:
         available_until = current_time + timedelta(seconds=SHOP_REFRESH_INTERVAL)
         
         for seed_type, seed_data in SEEDS.items():
-            # Проверить шанс появления в магазине
+            # Шанс появления в магазине
             if random.random() < seed_data['shop_chance']:
-                # Цена может варьироваться
+                # Цена может варьироваться на ±20%
                 price_variation = random.uniform(0.8, 1.2)
                 price = int(seed_data['base_price'] * price_variation)
                 
+                # Добавить в магазин
                 self.db.add_shop_item(seed_type, price, available_until)
     
     def change_weather(self):
@@ -284,6 +305,7 @@ class GameLogic:
             return {
                 'type': weather['weather_type'],
                 'name': weather_data['name'],
+                'emoji': weather_data['emoji'],
                 'multiplier': weather['multiplier'],
                 'growth_multiplier': weather_data['growth_multiplier'],
                 'price_multiplier': weather_data['price_multiplier']
@@ -292,6 +314,7 @@ class GameLogic:
             return {
                 'type': 'normal',
                 'name': 'Обычная погода',
+                'emoji': '🌤️',
                 'multiplier': 1.0,
                 'growth_multiplier': 1.0,
                 'price_multiplier': 1.0

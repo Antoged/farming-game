@@ -37,7 +37,7 @@ class Database:
                     seed_type TEXT,
                     planted_at TIMESTAMP,
                     growth_time INTEGER,
-                    is_ready BOOLEAN DEFAULT FALSE,
+                    status TEXT DEFAULT 'empty',
                     FOREIGN KEY (user_id) REFERENCES players (user_id)
                 )
             ''')
@@ -79,6 +79,24 @@ class Database:
                 )
             ''')
             
+            # Создать участки фермы для каждого игрока (если их нет)
+            cursor.execute('SELECT DISTINCT user_id FROM players')
+            players = cursor.fetchall()
+            
+            for player in players:
+                user_id = player[0]
+                # Проверить, есть ли уже участки для этого игрока
+                cursor.execute('SELECT COUNT(*) FROM farm_plots WHERE user_id = ?', (user_id,))
+                plot_count = cursor.fetchone()[0]
+                
+                if plot_count == 0:
+                    # Создать 6 участков для игрока
+                    for plot_id in range(1, 7):
+                        cursor.execute('''
+                            INSERT INTO farm_plots (user_id, plot_id, status)
+                            VALUES (?, ?, 'empty')
+                        ''', (user_id, plot_id))
+            
             conn.commit()
             conn.close()
     
@@ -99,12 +117,19 @@ class Database:
                     INSERT INTO players (user_id, username, money, experience, level)
                     VALUES (?, ?, 100, 0, 1)
                 ''', (user_id, username))
-                conn.commit()
                 
-                cursor.execute('''
-                    SELECT * FROM players WHERE user_id = ?
-                ''', (user_id,))
-                player = cursor.fetchone()
+                # Создать участки фермы для нового игрока
+                for plot_id in range(1, 7):
+                    cursor.execute('''
+                        INSERT INTO farm_plots (user_id, plot_id, status)
+                        VALUES (?, ?, 'empty')
+                    ''', (user_id, plot_id))
+                
+                conn.commit()
+                conn.close()
+                
+                # Получить созданного игрока
+                return self.get_or_create_player(user_id, username)
             
             conn.close()
             
@@ -133,7 +158,7 @@ class Database:
             conn.close()
     
     def get_farm_plots(self, user_id):
-        """Получить все участки фермы игрока"""
+        """Получить участки фермы игрока"""
         with self.lock:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
@@ -145,42 +170,51 @@ class Database:
             plots = cursor.fetchall()
             conn.close()
             
-            result = []
-            for plot in plots:
-                # Определить статус участка
-                if plot[6]:  # is_ready
-                    status = 'ready'
-                elif plot[3]:  # seed_type (если есть, значит посажен)
-                    status = 'planted'
-                else:
-                    status = 'empty'
-                
-                result.append({
-                    'id': plot[0],
-                    'user_id': plot[1],
-                    'plot_id': plot[2],
-                    'seed_type': plot[3],
-                    'planted_at': plot[4],
-                    'growth_time': plot[5],
-                    'is_ready': plot[6],
-                    'status': status
-                })
-            
-            return result
+            return [{
+                'id': plot[0],
+                'user_id': plot[1],
+                'plot_id': plot[2],
+                'seed_type': plot[3],
+                'planted_at': plot[4],
+                'growth_time': plot[5],
+                'status': plot[6]
+            } for plot in plots]
     
     def plant_seed(self, user_id, plot_id, seed_type, growth_time):
-        """Посадить семечко"""
+        """Посадить семечко на участок"""
         with self.lock:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
+            # Проверить, что участок свободен
             cursor.execute('''
-                INSERT INTO farm_plots (user_id, plot_id, seed_type, planted_at, growth_time)
-                VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)
-            ''', (user_id, plot_id, seed_type, growth_time))
+                SELECT status FROM farm_plots 
+                WHERE user_id = ? AND plot_id = ?
+            ''', (user_id, plot_id))
             
-            conn.commit()
-            conn.close()
+            plot = cursor.fetchone()
+            if not plot:
+                # Создать участок, если его нет
+                cursor.execute('''
+                    INSERT INTO farm_plots (user_id, plot_id, seed_type, planted_at, growth_time, status)
+                    VALUES (?, ?, ?, ?, ?, 'planted')
+                ''', (user_id, plot_id, seed_type, datetime.now(), growth_time))
+                conn.commit()
+                conn.close()
+                return True, "Семечко посажено"
+            elif plot[0] == 'empty':
+                # Посадить на свободный участок
+                cursor.execute('''
+                    UPDATE farm_plots 
+                    SET seed_type = ?, planted_at = ?, growth_time = ?, status = 'planted'
+                    WHERE user_id = ? AND plot_id = ?
+                ''', (seed_type, datetime.now(), growth_time, user_id, plot_id))
+                conn.commit()
+                conn.close()
+                return True, "Семечко посажено"
+            else:
+                conn.close()
+                return False, "Участок уже занят"
     
     def harvest_plot(self, plot_id):
         """Собрать урожай с участка"""
@@ -188,12 +222,29 @@ class Database:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
+            # Получить информацию об участке
             cursor.execute('''
-                DELETE FROM farm_plots WHERE id = ?
+                SELECT user_id, seed_type FROM farm_plots 
+                WHERE id = ? AND status = 'ready'
+            ''', (plot_id,))
+            
+            plot = cursor.fetchone()
+            if not plot:
+                conn.close()
+                return False, "Участок не готов к сбору"
+            
+            user_id, seed_type = plot
+            
+            # Очистить участок
+            cursor.execute('''
+                UPDATE farm_plots 
+                SET seed_type = NULL, planted_at = NULL, growth_time = NULL, status = 'empty'
+                WHERE id = ?
             ''', (plot_id,))
             
             conn.commit()
             conn.close()
+            return True, f"Урожай собран с участка {plot_id}"
     
     def add_to_inventory(self, user_id, item_type, weight, size, quality, price):
         """Добавить предмет в инвентарь"""
@@ -343,6 +394,49 @@ class Database:
                 INSERT INTO weather (weather_type, multiplier, ends_at)
                 VALUES (?, ?, ?)
             ''', (weather_type, multiplier, ends_at))
+            
+            conn.commit()
+            conn.close()
+
+    def buy_seed(self, user_id, seed_type, price):
+        """Купить семечко"""
+        with self.lock:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Проверить, есть ли у игрока деньги
+            cursor.execute('SELECT money FROM players WHERE user_id = ?', (user_id,))
+            player = cursor.fetchone()
+            
+            if not player or player[0] < price:
+                conn.close()
+                return False
+            
+            # Списать деньги
+            cursor.execute('''
+                UPDATE players SET money = money - ? WHERE user_id = ?
+            ''', (price, user_id))
+            
+            # Удалить товар из магазина
+            cursor.execute('''
+                DELETE FROM shop_items 
+                WHERE seed_type = ? AND price = ? 
+                LIMIT 1
+            ''', (seed_type, price))
+            
+            conn.commit()
+            conn.close()
+            return True
+
+    def update_plot_status(self, plot_id, status):
+        """Обновить статус участка"""
+        with self.lock:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                UPDATE farm_plots SET status = ? WHERE id = ?
+            ''', (status, plot_id))
             
             conn.commit()
             conn.close()

@@ -124,7 +124,55 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 Все действия выполняются в игре через кнопку "🌾 Играть в ферму"!
 """
-        await query.edit_message_text(help_text)
+        # Создаем клавиатуру с кнопкой "Назад"
+        keyboard = [
+            [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(help_text, reply_markup=reply_markup)
+    
+    elif query.data == "back_to_main":
+        # Возвращаемся к главному меню
+        user = query.from_user
+        player = game.db.get_or_create_player(user.id, user.username)
+        
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    "🌾 Играть в ферму", 
+                    web_app=WebAppInfo(url=f"{WEBAPP_URL}?user_id={user.id}")
+                )
+            ],
+            [
+                InlineKeyboardButton("ℹ️ Помощь", callback_data="help")
+            ]
+        ]
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        welcome_text = f"""
+🎮 Добро пожаловать в Фермерскую игру, {user.first_name}!
+
+🌱 Вы начинающий фермер. У вас есть:
+💰 {player['money']} монет
+📊 Уровень {player['level']}
+
+🎯 Как играть:
+1. Нажмите "🌾 Играть в ферму" чтобы открыть игру
+2. Покупайте семена в магазине
+3. Сажайте их на участки фермы
+4. Собирайте урожай и продавайте
+5. Зарабатывайте деньги и развивайтесь!
+
+🌤️ Погода влияет на рост растений и цены
+🛒 Магазин обновляется каждые 5 минут
+⏰ Урожай растет в реальном времени
+
+Нажмите "🌾 Играть в ферму" чтобы начать!
+"""
+        
+        await query.edit_message_text(welcome_text, reply_markup=reply_markup)
 
 def main() -> None:
     """Запуск бота"""
