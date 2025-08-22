@@ -246,25 +246,20 @@
         tg.ready();
         tg.expand();
 
-        // Получение или генерация user_id
-        const urlParams = new URLSearchParams(window.location.search);
-        let userId = urlParams.get('user_id');
+        // Генерация или получение уникального user_id для каждого пользователя
+        let userId = localStorage.getItem('farming_game_user_id');
         
-        // Если user_id не передан, генерируем уникальный ID или берем из localStorage
+        // Если ID еще нет, генерируем новый уникальный ID
         if (!userId) {
-            userId = localStorage.getItem('farming_game_user_id');
-            if (!userId) {
-                // Генерируем уникальный ID на основе времени и случайного числа
-                userId = 'demo_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-                localStorage.setItem('farming_game_user_id', userId);
-            }
+            // Генерируем уникальный ID на основе времени, случайного числа и хеша браузера
+            const browserFingerprint = navigator.userAgent.length + screen.width + screen.height;
+            userId = 'user_' + Date.now() + '_' + Math.floor(Math.random() * 10000) + '_' + (browserFingerprint % 1000);
+            localStorage.setItem('farming_game_user_id', userId);
         }
         
-        // Флаг для определения, работаем ли мы в демо-режиме
-        // Демо-режим включается если:
-        // 1. Нет user_id в URL (пользователь зашел напрямую на сайт)
-        // 2. Или это GitHub Pages
-        const isDemoMode = !urlParams.get('user_id') || window.location.hostname === 'antoged.github.io';
+        // Всегда работаем в демо-режиме с локальными данными
+        // (можно добавить API-режим в будущем через настройки)
+        const isDemoMode = true;
 
         let currentTab = 'farm';
 
@@ -353,21 +348,8 @@
         // Загрузка фермы
         async function loadFarm() {
             try {
-                let farmData;
-                
-                if (isDemoMode) {
-                    // Используем mock данные
-                    farmData = mockData.farm;
-                } else {
-                    // Реальный API запрос
-                    const response = await fetch(`/api/farm?user_id=${userId}`);
-                    farmData = await response.json();
-                    
-                    if (farmData.error) {
-                        document.getElementById('farm-grid').innerHTML = `<div class="error">${farmData.error}</div>`;
-                        return;
-                    }
-                }
+                // Используем локальные данные
+                const farmData = mockData.farm;
                 
                 const farmGrid = document.getElementById('farm-grid');
                 farmGrid.innerHTML = '';
@@ -397,23 +379,15 @@
                 });
             } catch (error) {
                 console.error('Ошибка загрузки фермы:', error);
-                // В случае ошибки показываем демо-данные
-                loadFarm = () => loadFarm.call(this);
-                isDemoMode = true;
-                loadFarm();
+                document.getElementById('farm-grid').innerHTML = '<div class="error">Ошибка загрузки фермы</div>';
             }
         }
 
         // Обработка клика по участку
         async function handlePlotClick(plotId) {
             try {
-                let plots;
-                
-                if (isDemoMode) {
-                    plots = { plots: mockData.farm.plots };
-                } else {
-                    plots = await fetch(`/api/farm?user_id=${userId}`).then(r => r.json());
-                }
+                // Используем локальные данные
+                const plots = { plots: mockData.farm.plots };
                 
                 const plot = plots.plots[plotId];
                 
@@ -443,39 +417,18 @@
         // Посадка семян
         async function plantSeed(plotId, seedType) {
             try {
-                if (isDemoMode) {
-                    // Демо-режим: обновляем mock данные
-                    if (mockData.farm.plots[plotId].status === 'empty') {
-                        mockData.farm.plots[plotId] = {
-                            status: 'planted',
-                            seedType: seedType,
-                            timeLeft: 60 // 1 минута для демо
-                        };
-                        saveMockData(mockData); // Сохраняем изменения
-                        tg.showAlert('🌱 Семена посажены! (Демо-режим)');
-                        loadFarm();
-                    } else {
-                        tg.showAlert('❌ Участок уже занят');
-                    }
-                    return;
-                }
-                
-                const response = await fetch('/api/plant', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        plot_id: plotId,
-                        seed_type: seedType
-                    })
-                });
-                
-                const result = await response.json();
-                if (result.success) {
+                // Обновляем локальные данные
+                if (mockData.farm.plots[plotId].status === 'empty') {
+                    mockData.farm.plots[plotId] = {
+                        status: 'planted',
+                        seedType: seedType,
+                        timeLeft: 60 // 1 минута
+                    };
+                    saveMockData(mockData); // Сохраняем изменения
                     tg.showAlert('🌱 Семена посажены!');
                     loadFarm();
                 } else {
-                    tg.showAlert('❌ Ошибка: ' + result.message);
+                    tg.showAlert('❌ Участок уже занят');
                 }
             } catch (error) {
                 tg.showAlert('❌ Ошибка посадки');
@@ -485,55 +438,34 @@
         // Сбор урожая
         async function harvestPlot(plotId) {
             try {
-                if (isDemoMode) {
-                    // Демо-режим: обновляем mock данные
-                    if (mockData.farm.plots[plotId].status === 'ready') {
-                        const seedType = mockData.farm.plots[plotId].seedType || 'carrot';
-                        
-                        // Очищаем участок
-                        mockData.farm.plots[plotId] = { status: 'empty' };
-                        
-                        // Добавляем в инвентарь
-                        const newItem = {
-                            id: Date.now(),
-                            item_type: seedType,
-                            name: mockData.shop.items.find(i => i.seed_type === seedType)?.name || 'Урожай',
-                            emoji: mockData.shop.items.find(i => i.seed_type === seedType)?.emoji || '🌱',
-                            price: Math.floor(Math.random() * 30) + 15,
-                            weight: Math.floor(Math.random() * 100) + 50,
-                            size: Math.floor(Math.random() * 20) + 10
-                        };
-                        
-                        mockData.inventory.items.push(newItem);
-                        mockData.stats.inventory_count = mockData.inventory.items.length;
-                        mockData.stats.money += 5; // Бонус за сбор
-                        
-                        saveMockData(mockData); // Сохраняем изменения
-                        tg.showAlert('🌾 Урожай собран! (Демо-режим)');
-                        loadFarm();
-                        updateStats();
-                    } else {
-                        tg.showAlert('❌ Урожай не готов');
-                    }
-                    return;
-                }
-                
-                const response = await fetch('/api/harvest', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        plot_id: plotId
-                    })
-                });
-                
-                const result = await response.json();
-                if (result.success) {
+                // Обновляем локальные данные
+                if (mockData.farm.plots[plotId].status === 'ready') {
+                    const seedType = mockData.farm.plots[plotId].seedType || 'carrot';
+                    
+                    // Очищаем участок
+                    mockData.farm.plots[plotId] = { status: 'empty' };
+                    
+                    // Добавляем в инвентарь
+                    const newItem = {
+                        id: Date.now(),
+                        item_type: seedType,
+                        name: mockData.shop.items.find(i => i.seed_type === seedType)?.name || 'Урожай',
+                        emoji: mockData.shop.items.find(i => i.seed_type === seedType)?.emoji || '🌱',
+                        price: Math.floor(Math.random() * 30) + 15,
+                        weight: Math.floor(Math.random() * 100) + 50,
+                        size: Math.floor(Math.random() * 20) + 10
+                    };
+                    
+                    mockData.inventory.items.push(newItem);
+                    mockData.stats.inventory_count = mockData.inventory.items.length;
+                    mockData.stats.money += 5; // Бонус за сбор
+                    
+                    saveMockData(mockData); // Сохраняем изменения
                     tg.showAlert('🌾 Урожай собран!');
                     loadFarm();
                     updateStats();
                 } else {
-                    tg.showAlert('❌ Ошибка: ' + result.message);
+                    tg.showAlert('❌ Урожай не готов');
                 }
             } catch (error) {
                 tg.showAlert('❌ Ошибка сбора урожая');
@@ -543,16 +475,8 @@
         // Загрузка магазина
         async function loadShop() {
             try {
-                let shopData;
-                
-                if (isDemoMode) {
-                    // Используем mock данные
-                    shopData = mockData.shop;
-                } else {
-                    // Реальный API запрос
-                    const response = await fetch('/api/shop');
-                    shopData = await response.json();
-                }
+                // Используем локальные данные
+                const shopData = mockData.shop;
                 
                 const shopItems = document.getElementById('shop-items');
                 shopItems.innerHTML = '';
@@ -576,37 +500,17 @@
         // Покупка семян
         async function buySeed(seedType) {
             try {
-                if (isDemoMode) {
-                    // Демо-режим: проверяем деньги и покупаем семена
-                    const seed = mockData.shop.items.find(item => item.seed_type === seedType);
-                    if (seed && mockData.stats.money >= seed.price) {
-                        mockData.stats.money -= seed.price;
-                        saveMockData(mockData); // Сохраняем изменения
-                        tg.showAlert(`🌱 ${seed.name} куплены за ${seed.price} монет! (Демо-режим)`);
-                        updateStats();
-                    } else if (seed) {
-                        tg.showAlert(`❌ Недостаточно денег! Нужно: ${seed.price}, у вас: ${mockData.stats.money}`);
-                    } else {
-                        tg.showAlert('❌ Семена не найдены');
-                    }
-                    return;
-                }
-                
-                const response = await fetch('/api/buy', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        seed_type: seedType
-                    })
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    tg.showAlert('✅ Семена куплены!');
+                // Проверяем деньги и покупаем семена
+                const seed = mockData.shop.items.find(item => item.seed_type === seedType);
+                if (seed && mockData.stats.money >= seed.price) {
+                    mockData.stats.money -= seed.price;
+                    saveMockData(mockData); // Сохраняем изменения
+                    tg.showAlert(`🌱 ${seed.name} куплены за ${seed.price} монет!`);
                     updateStats();
+                } else if (seed) {
+                    tg.showAlert(`❌ Недостаточно денег! Нужно: ${seed.price}, у вас: ${mockData.stats.money}`);
                 } else {
-                    tg.showAlert('❌ Ошибка: ' + result.message);
+                    tg.showAlert('❌ Семена не найдены');
                 }
             } catch (error) {
                 tg.showAlert('❌ Ошибка покупки');
@@ -616,21 +520,8 @@
         // Загрузка инвентаря
         async function loadInventory() {
             try {
-                let inventoryData;
-                
-                if (isDemoMode) {
-                    // Используем mock данные
-                    inventoryData = mockData.inventory;
-                } else {
-                    // Реальный API запрос
-                    const response = await fetch(`/api/inventory?user_id=${userId}`);
-                    inventoryData = await response.json();
-                    
-                    if (inventoryData.error) {
-                        document.getElementById('inventory-items').innerHTML = `<div class="error">${inventoryData.error}</div>`;
-                        return;
-                    }
-                }
+                // Используем локальные данные
+                const inventoryData = mockData.inventory;
                 
                 const inventoryItems = document.getElementById('inventory-items');
                 inventoryItems.innerHTML = '';
@@ -660,38 +551,17 @@
         // Продажа предмета
         async function sellItem(itemId) {
             try {
-                if (isDemoMode) {
-                    // Демо-режим: удаляем предмет из mock данных
-                    const item = mockData.inventory.items.find(item => item.id === itemId);
-                    if (item) {
-                        mockData.inventory.items = mockData.inventory.items.filter(item => item.id !== itemId);
-                        mockData.stats.money += item.price; // Добавляем деньги по цене предмета
-                        mockData.stats.inventory_count = mockData.inventory.items.length;
-                        
-                        saveMockData(mockData); // Сохраняем изменения
-                        tg.showAlert('💰 Предмет продан! (Демо-режим)');
-                        loadInventory();
-                        updateStats();
-                    }
-                    return;
-                }
-                
-                const response = await fetch('/api/sell', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        item_id: itemId
-                    })
-                });
-                
-                const result = await response.json();
-                if (result.success) {
+                // Удаляем предмет из локальных данных
+                const item = mockData.inventory.items.find(item => item.id === itemId);
+                if (item) {
+                    mockData.inventory.items = mockData.inventory.items.filter(item => item.id !== itemId);
+                    mockData.stats.money += item.price; // Добавляем деньги по цене предмета
+                    mockData.stats.inventory_count = mockData.inventory.items.length;
+                    
+                    saveMockData(mockData); // Сохраняем изменения
                     tg.showAlert('💰 Предмет продан!');
                     loadInventory();
                     updateStats();
-                } else {
-                    tg.showAlert('❌ Ошибка: ' + result.message);
                 }
             } catch (error) {
                 tg.showAlert('❌ Ошибка продажи');
@@ -701,16 +571,8 @@
         // Обновление статистики
         async function updateStats() {
             try {
-                let stats;
-                
-                if (isDemoMode) {
-                    // Используем mock данные
-                    stats = mockData.stats;
-                } else {
-                    // Реальный API запрос
-                    const response = await fetch(`/api/stats?user_id=${userId}`);
-                    stats = await response.json();
-                }
+                // Используем локальные данные
+                const stats = mockData.stats;
                 
                 document.getElementById('money').textContent = stats.money || 100;
                 document.getElementById('level').textContent = stats.level || 1;
@@ -727,16 +589,8 @@
         // Обновление погоды
         async function updateWeather() {
             try {
-                let weather;
-                
-                if (isDemoMode) {
-                    // Используем mock данные
-                    weather = mockData.weather;
-                } else {
-                    // Реальный API запрос
-                    const response = await fetch('/api/weather');
-                    weather = await response.json();
-                }
+                // Используем локальные данные
+                const weather = mockData.weather;
                 
                 const emoji = {
                     'sunny': '☀️',
@@ -759,18 +613,12 @@
         // Отображение информации о режиме
         function updateModeInfo() {
             const modeInfo = document.getElementById('mode-info');
-            if (isDemoMode) {
-                const isNewUser = userId.startsWith('demo_');
-                const resetButton = '<button onclick="resetDemoData()" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:10px;margin-left:10px;">🔄 Новая игра</button>';
-                modeInfo.innerHTML = (isNewUser ? 
-                    `🎮 Демо-режим | ID: ${userId.slice(0, 20)}...` : 
-                    `🎮 Демо-режим | Telegram ID: ${userId}`) + resetButton;
-            } else {
-                modeInfo.textContent = `🔗 Подключен к серверу | ID: ${userId}`;
-            }
+            const resetButton = '<button onclick="resetDemoData()" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:10px;margin-left:10px;">🔄 Новая игра</button>';
+            const shortId = userId.length > 25 ? userId.slice(0, 25) + '...' : userId;
+            modeInfo.innerHTML = `🎮 Игровой ID: ${shortId}${resetButton}`;
         }
         
-        // Функция сброса демо-данных
+        // Функция сброса игровых данных
         function resetDemoData() {
             if (confirm('Вы уверены, что хотите начать новую игру? Весь прогресс будет потерян.')) {
                 const storageKey = `farming_game_data_${userId}`;
