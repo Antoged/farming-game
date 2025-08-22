@@ -543,13 +543,20 @@
         // Инициализация игры
         async function initGame() {
             try {
-                // Получить user_id из URL
+                // Получить user_id из URL или сгенерировать для браузера
                 const urlParams = new URLSearchParams(window.location.search);
-                const userId = urlParams.get('user_id');
+                let userId = urlParams.get('user_id');
                 
+                // Если нет user_id (открыто в браузере), создаем/получаем из localStorage
                 if (!userId) {
-                    showMessage('Ошибка: не указан ID пользователя', false);
-                    return;
+                    userId = localStorage.getItem('farming_user_id');
+                    if (!userId) {
+                        // Генерируем случайный ID для браузерной игры
+                        userId = 'browser_' + Math.random().toString(36).substr(2, 9) + Date.now();
+                        localStorage.setItem('farming_user_id', userId);
+                        console.log('Создан новый ID для браузерной игры:', userId);
+                        showMessage('🌾 Добро пожаловать в браузерную версию игры!', true);
+                    }
                 }
                 
                 // Инициализировать пользователя

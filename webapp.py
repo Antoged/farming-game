@@ -14,6 +14,13 @@ CORS(app)
 
 game = GameLogic()
 
+def convert_user_id(user_id):
+    """Конвертирует user_id в числовой формат для базы данных"""
+    if isinstance(user_id, str) and user_id.startswith('browser_'):
+        import hashlib
+        return int(hashlib.md5(user_id.encode()).hexdigest()[:8], 16)
+    return int(user_id)
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -24,12 +31,13 @@ def init_user():
     try:
         data = request.get_json()
         user_id = data.get('user_id')
-        username = data.get('username')
+        username = data.get('username', 'Игрок')
         
         if not user_id:
             return jsonify({'error': 'user_id required'}), 400
         
-        player = game.db.get_or_create_player(user_id, username)
+        numeric_id = convert_user_id(user_id)
+        player = game.db.get_or_create_player(numeric_id, username)
         return jsonify({'success': True, 'player': player})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -42,7 +50,7 @@ def get_farm():
         if not user_id:
             return jsonify({'error': 'user_id required'}), 400
         
-        farm_status = game.get_farm_status(int(user_id))
+        farm_status = game.get_farm_status(convert_user_id(user_id))
         weather_info = game.get_current_weather_info()
         
         return jsonify({
@@ -64,7 +72,7 @@ def plant_seed():
         if not all([user_id, plot_id, seed_type]):
             return jsonify({'error': 'Missing required parameters'}), 400
         
-        success, message = game.plant_seed(int(user_id), int(plot_id), seed_type)
+        success, message = game.plant_seed(convert_user_id(user_id), int(plot_id), seed_type)
         return jsonify({'success': success, 'message': message})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -80,7 +88,7 @@ def harvest_plot():
         if not all([user_id, plot_id]):
             return jsonify({'error': 'Missing required parameters'}), 400
         
-        success, message = game.harvest_plot(int(user_id), int(plot_id))
+        success, message = game.harvest_plot(convert_user_id(user_id), int(plot_id))
         return jsonify({'success': success, 'message': message})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -105,7 +113,7 @@ def buy_seed():
         if not all([user_id, seed_type]):
             return jsonify({'error': 'Missing required parameters'}), 400
         
-        success, message = game.buy_seed(int(user_id), seed_type)
+        success, message = game.buy_seed(convert_user_id(user_id), seed_type)
         return jsonify({'success': success, 'message': message})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -118,7 +126,7 @@ def get_inventory():
         if not user_id:
             return jsonify({'error': 'user_id required'}), 400
         
-        inventory = game.db.get_inventory(int(user_id))
+        inventory = game.db.get_inventory(convert_user_id(user_id))
         return jsonify({'items': inventory})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -134,7 +142,7 @@ def sell_item():
         if not all([user_id, item_id]):
             return jsonify({'error': 'Missing required parameters'}), 400
         
-        success, message = game.sell_item(int(user_id), int(item_id))
+        success, message = game.sell_item(convert_user_id(user_id), int(item_id))
         return jsonify({'success': success, 'message': message})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -147,7 +155,7 @@ def get_stats():
         if not user_id:
             return jsonify({'error': 'user_id required'}), 400
         
-        stats = game.get_player_stats(int(user_id))
+        stats = game.get_player_stats(convert_user_id(user_id))
         return jsonify(stats)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -169,14 +177,21 @@ def get_player():
         if not user_id:
             return jsonify({'error': 'user_id required'}), 400
         
-        player = game.db.get_or_create_player(int(user_id), None)
+        player = game.db.get_or_create_player(convert_user_id(user_id), None)
         return jsonify(player)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 # Веб-приложение работает только через GitHub Pages
 # Используйте: https://antoged.github.io/farming-game/
+# Для тестирования можно временно запустить локально
 if __name__ == '__main__':
-    print("⚠️  Веб-приложение доступно только через GitHub Pages:")
-    print("🌐 https://antoged.github.io/farming-game/")
-    print("❌ Локальный сервер отключен для безопасности")
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == '--test':
+        print("🧪 Тестовый режим - запуск локального сервера")
+        app.run(debug=True, host='0.0.0.0', port=5000)
+    else:
+        print("⚠️  Веб-приложение доступно только через GitHub Pages:")
+        print("🌐 https://antoged.github.io/farming-game/")
+        print("❌ Локальный сервер отключен для безопасности")
+        print("💡 Для тестирования: python webapp.py --test")
