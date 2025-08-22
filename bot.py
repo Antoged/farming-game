@@ -2,7 +2,10 @@ import asyncio
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-from config import BOT_TOKEN, WEBAPP_URL, SEEDS, WEATHER_EFFECTS
+try:
+    from config_local import BOT_TOKEN, WEBAPP_URL, SEEDS, WEATHER_EFFECTS
+except ImportError:
+    from config import BOT_TOKEN, WEBAPP_URL, SEEDS, WEATHER_EFFECTS
 from game_logic import GameLogic
 import threading
 import time

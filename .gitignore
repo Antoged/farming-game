@@ -40,6 +40,9 @@ venv.bak/
 .env.production
 .envrc
 
+# Local configuration (contains sensitive data)
+config_local.py
+
 # Database
 *.db
 *.sqlite
