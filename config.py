@@ -5,7 +5,7 @@ load_dotenv()
 
 # Telegram Bot Configuration
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-WEBAPP_URL = os.getenv('WEBAPP_URL', 'https://your-domain.com')
+WEBAPP_URL = os.getenv('WEBAPP_URL', 'https://antoged.github.io/farming/telegram-app.html')
 
 # Game Configuration
 SHOP_REFRESH_INTERVAL = 300  # 5 minutes in seconds
@@ -15,6 +15,7 @@ WEATHER_CHANGE_INTERVAL = 1800  # 30 minutes in seconds
 SEEDS = {
     'carrot': {
         'name': 'Морковь',
+        'emoji': '🥕',
         'base_price': 10,
         'growth_time': 60,  # seconds
         'shop_chance': 0.8,
@@ -25,6 +26,7 @@ SEEDS = {
     },
     'tomato': {
         'name': 'Помидор',
+        'emoji': '🍅',
         'base_price': 25,
         'growth_time': 120,
         'shop_chance': 0.6,
@@ -35,6 +37,7 @@ SEEDS = {
     },
     'potato': {
         'name': 'Картошка',
+        'emoji': '🥔',
         'base_price': 15,
         'growth_time': 90,
         'shop_chance': 0.7,
@@ -45,6 +48,7 @@ SEEDS = {
     },
     'cucumber': {
         'name': 'Огурец',
+        'emoji': '🥒',
         'base_price': 20,
         'growth_time': 75,
         'shop_chance': 0.65,
@@ -55,6 +59,7 @@ SEEDS = {
     },
     'strawberry': {
         'name': 'Клубника',
+        'emoji': '🍓',
         'base_price': 50,
         'growth_time': 180,
         'shop_chance': 0.4,
@@ -65,6 +70,7 @@ SEEDS = {
     },
     'watermelon': {
         'name': 'Арбуз',
+        'emoji': '🍉',
         'base_price': 100,
         'growth_time': 300,
         'shop_chance': 0.2,
@@ -75,6 +81,7 @@ SEEDS = {
     },
     'golden_apple': {
         'name': 'Золотое яблоко',
+        'emoji': '🍎',
         'base_price': 500,
         'growth_time': 600,
         'shop_chance': 0.05,
@@ -89,26 +96,33 @@ SEEDS = {
 WEATHER_EFFECTS = {
     'sunny': {
         'name': 'Солнечно',
+        'emoji': '☀️',
         'growth_multiplier': 1.2,
         'price_multiplier': 1.1,
         'chance': 0.4
     },
     'rainy': {
         'name': 'Дождливо',
+        'emoji': '🌧️',
         'growth_multiplier': 1.5,
         'price_multiplier': 1.3,
         'chance': 0.3
     },
     'cloudy': {
         'name': 'Облачно',
+        'emoji': '☁️',
         'growth_multiplier': 1.0,
         'price_multiplier': 1.0,
         'chance': 0.2
     },
     'stormy': {
         'name': 'Гроза',
+        'emoji': '⛈️',
         'growth_multiplier': 0.8,
-        'price_multiplier': 1.5,
+        'price_multiplier': 0.9,
         'chance': 0.1
     }
 }
+
+# Default weather
+DEFAULT_WEATHER = 'normal'

@@ -31,7 +31,8 @@ jobs:
         run: |
           mkdir -p docs
           cp README.md docs/
-          # НЕ копируем корневой index.html - используем только docs/index.html
+          # Копируем Telegram Mini App версию
+          cp docs/telegram-app.html docs/
           cp CNAME docs/
           touch docs/.nojekyll
           
