@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: false
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -45,9 +47,8 @@ jobs:
             cp -r static docs/
           fi
           
-          # Создаем пустые файлы для корректной работы
-          echo "# Farming Game" > docs/index.html
-          echo "Redirecting to main app..." > docs/telegram-app.html
+          echo "✅ Статический сайт собран успешно"
+          ls -la docs/
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
