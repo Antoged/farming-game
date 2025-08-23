@@ -15,18 +15,20 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            height: 100vh;
             color: white;
-            overflow-x: hidden;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         .game-container {
-            max-width: 100vw;
-            min-height: 100vh;
-            padding: 10px;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            padding: 10px;
+            gap: 10px;
+            overflow: hidden;
         }
         
         .header {
@@ -36,55 +38,79 @@
             text-align: center;
             border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
         }
         
         .header h1 {
-            font-size: clamp(24px, 5vw, 32px);
-            margin-bottom: 10px;
+            font-size: clamp(20px, 4vw, 28px);
+            margin-bottom: 5px;
         }
         
         .header p {
-            font-size: clamp(14px, 3vw, 18px);
+            font-size: clamp(12px, 2.5vw, 16px);
             opacity: 0.9;
         }
         
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
             margin: 0;
+            flex-shrink: 0;
         }
         
         .stat {
             background: rgba(255,255,255,0.2);
-            padding: 15px;
+            padding: 10px;
             border-radius: 15px;
             text-align: center;
             border: 1px solid rgba(255,255,255,0.3);
         }
         
         .stat h3 {
-            font-size: clamp(12px, 2.5vw, 16px);
-            margin-bottom: 5px;
+            font-size: clamp(10px, 2vw, 14px);
+            margin-bottom: 3px;
         }
         
         .stat p {
-            font-size: clamp(16px, 3vw, 20px);
+            font-size: clamp(14px, 2.5vw, 18px);
             font-weight: bold;
         }
         
         .weather {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 15px;
+            border-radius: 15px;
+            padding: 10px;
             text-align: center;
             border: 1px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
         }
         
         .weather h3 {
-            font-size: clamp(16px, 3vw, 20px);
-            margin-bottom: 10px;
+            font-size: clamp(14px, 2.5vw, 18px);
+            margin-bottom: 5px;
+        }
+        
+        .weather p {
+            font-size: clamp(12px, 2vw, 14px);
+        }
+        
+        .content-area {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .tab-content {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .tab-content.active {
+            display: block;
         }
         
         .farm-section {
@@ -93,17 +119,18 @@
             border-radius: 20px;
             padding: 15px;
             border: 1px solid rgba(255,255,255,0.2);
+            height: 100%;
         }
         
         .farm-section h3 {
-            font-size: clamp(18px, 4vw, 24px);
+            font-size: clamp(16px, 3vw, 20px);
             margin-bottom: 15px;
             text-align: center;
         }
         
         .farm-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 15px;
             max-width: 100%;
         }
@@ -112,11 +139,11 @@
             background: rgba(255,255,255,0.2);
             border: 2px solid rgba(255,255,255,0.3);
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            min-height: 120px;
+            min-height: 100px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -149,17 +176,18 @@
             border-radius: 20px;
             padding: 15px;
             border: 1px solid rgba(255,255,255,0.2);
+            height: 100%;
         }
         
         .shop-section h3 {
-            font-size: clamp(18px, 4vw, 24px);
+            font-size: clamp(16px, 3vw, 20px);
             margin-bottom: 15px;
             text-align: center;
         }
         
         .shop-items {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 15px;
         }
         
@@ -172,17 +200,17 @@
         }
         
         .shop-item .emoji {
-            font-size: clamp(32px, 6vw, 48px);
-            margin-bottom: 10px;
-        }
-        
-        .shop-item h4 {
-            font-size: clamp(14px, 3vw, 18px);
+            font-size: clamp(24px, 5vw, 32px);
             margin-bottom: 8px;
         }
         
+        .shop-item h4 {
+            font-size: clamp(12px, 2.5vw, 16px);
+            margin-bottom: 5px;
+        }
+        
         .shop-item p {
-            font-size: clamp(12px, 2.5vw, 14px);
+            font-size: clamp(10px, 2vw, 12px);
             margin-bottom: 5px;
         }
         
@@ -190,12 +218,12 @@
             background: rgba(255,255,255,0.2);
             color: white;
             border: 1px solid rgba(255,255,255,0.3);
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 8px 16px;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin: 5px;
-            font-size: clamp(12px, 2.5vw, 14px);
+            margin: 3px;
+            font-size: clamp(10px, 2vw, 12px);
             width: 100%;
         }
         
@@ -211,10 +239,10 @@
         
         .progress-bar {
             width: 100%;
-            height: 8px;
+            height: 6px;
             background: rgba(255,255,255,0.2);
-            border-radius: 4px;
-            margin-top: 10px;
+            border-radius: 3px;
+            margin-top: 8px;
             overflow: hidden;
         }
         
@@ -242,11 +270,141 @@
             margin: 10px 0;
         }
         
+        .bottom-nav {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: clamp(12px, 2.5vw, 14px);
+            flex: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn.active {
+            background: rgba(255,255,255,0.4);
+            border-color: rgba(255,255,255,0.6);
+        }
+        
+        .nav-btn .icon {
+            font-size: clamp(16px, 3vw, 20px);
+        }
+        
+        .nav-btn .text {
+            font-size: clamp(10px, 2vw, 12px);
+        }
+        
+        .seed-selection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .seed-selection.active {
+            display: flex;
+        }
+        
+        .seed-modal {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.3);
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+        
+        .seed-modal h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: clamp(16px, 3vw, 20px);
+        }
+        
+        .seed-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+        }
+        
+        .seed-option {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .seed-option:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .seed-option .emoji {
+            font-size: clamp(24px, 5vw, 32px);
+            margin-bottom: 8px;
+        }
+        
+        .seed-option .name {
+            font-size: clamp(12px, 2.5vw, 14px);
+            margin-bottom: 5px;
+        }
+        
+        .seed-option .price {
+            font-size: clamp(10px, 2vw, 12px);
+            opacity: 0.8;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
         /* Мобильная оптимизация */
         @media (max-width: 768px) {
             .game-container {
                 padding: 5px;
-                gap: 10px;
+                gap: 8px;
             }
             
             .farm-grid {
@@ -260,8 +418,12 @@
             }
             
             .plot {
-                min-height: 100px;
-                padding: 15px;
+                min-height: 80px;
+                padding: 10px;
+            }
+            
+            .nav-btn {
+                padding: 10px 15px;
             }
         }
         
@@ -272,6 +434,15 @@
             
             .shop-items {
                 grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 5px;
+            }
+            
+            .stat {
+                padding: 8px;
             }
         }
     </style>
@@ -303,17 +474,62 @@
             <p id="weather-info">☀️ Солнечно - +20% рост, +10% цены</p>
         </div>
         
-        <div class="farm-section">
-            <h3>🌱 Ферма</h3>
-            <div class="farm-grid" id="farm-grid">
-                <!-- Ферма будет создана JavaScript -->
+        <div class="content-area">
+            <!-- Главный экран -->
+            <div class="tab-content active" id="main-tab">
+                <div class="farm-section">
+                    <h3>🌱 Ферма</h3>
+                    <div class="farm-grid" id="farm-grid">
+                        <!-- Ферма будет создана JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Магазин -->
+            <div class="tab-content" id="shop-tab">
+                <div class="shop-section">
+                    <h3>🛒 Магазин семян</h3>
+                    <div class="shop-items" id="shop-items">
+                        <!-- Магазин будет создан JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Инвентарь -->
+            <div class="tab-content" id="inventory-tab">
+                <div class="shop-section">
+                    <h3>🎒 Инвентарь</h3>
+                    <div class="shop-items" id="inventory-items">
+                        <!-- Инвентарь будет создан JavaScript -->
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="shop-section">
-            <h3>🛒 Магазин семян</h3>
-            <div class="shop-items" id="shop-items">
-                <!-- Магазин будет создан JavaScript -->
+        <!-- Навигация внизу -->
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="showTab('main-tab')">
+                <div class="icon">🌱</div>
+                <div class="text">Ферма</div>
+            </button>
+            <button class="nav-btn" onclick="showTab('shop-tab')">
+                <div class="icon">🛒</div>
+                <div class="text">Магазин</div>
+            </button>
+            <button class="nav-btn" onclick="showTab('inventory-tab')">
+                <div class="icon">🎒</div>
+                <div class="text">Инвентарь</div>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Модальное окно выбора семян -->
+    <div class="seed-selection" id="seed-selection">
+        <div class="seed-modal">
+            <button class="close-btn" onclick="closeSeedSelection()">×</button>
+            <h3 id="seed-modal-title">Выберите семя для посадки</h3>
+            <div class="seed-options" id="seed-options">
+                <!-- Опции семян будут созданы JavaScript -->
             </div>
         </div>
     </div>
@@ -378,6 +594,7 @@
         };
         
         let tg = null;
+        let currentPlotIndex = null;
         
         // Инициализация Telegram Web App
         function initTelegramApp() {
@@ -398,7 +615,27 @@
             updateStats();
             renderFarm();
             renderShop();
+            renderInventory();
             startGameLoop();
+        }
+        
+        // Показать таб
+        function showTab(tabId) {
+            // Скрываем все табы
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Убираем активный класс со всех кнопок
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Показываем нужный таб
+            document.getElementById(tabId).classList.add('active');
+            
+            // Активируем нужную кнопку
+            event.target.closest('.nav-btn').classList.add('active');
         }
         
         // Обновление статистики
@@ -470,6 +707,29 @@
             });
         }
         
+        // Отрисовка инвентаря
+        function renderInventory() {
+            const inventoryItems = document.getElementById('inventory-items');
+            inventoryItems.innerHTML = '';
+            
+            if (gameState.inventory.length === 0) {
+                inventoryItems.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.7;">Инвентарь пуст</div>';
+                return;
+            }
+            
+            gameState.inventory.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'shop-item';
+                itemDiv.innerHTML = `
+                    <div class="emoji">${item.emoji}</div>
+                    <h4>${item.name}</h4>
+                    <p>Время роста: ${item.growth_time} сек</p>
+                    <button class="btn" onclick="sellSeed(${index})">Продать за ${Math.round(item.price * 0.5)} 💰</button>
+                `;
+                inventoryItems.appendChild(itemDiv);
+            });
+        }
+        
         // Покупка семян
         function buySeed(seedType) {
             const seed = gameState.shop.find(s => s.type === seedType);
@@ -480,10 +740,24 @@
                 gameState.inventory.push({ ...seed, id: Date.now() });
                 updateStats();
                 renderShop();
+                renderInventory();
                 showMessage(`✅ Куплено: ${seed.name}`, 'success');
             } else {
                 showMessage('❌ Недостаточно денег!', 'error');
             }
+        }
+        
+        // Продажа семян
+        function sellSeed(inventoryIndex) {
+            const seed = gameState.inventory[inventoryIndex];
+            const sellPrice = Math.round(seed.price * 0.5);
+            
+            gameState.money += sellPrice;
+            gameState.inventory.splice(inventoryIndex, 1);
+            
+            updateStats();
+            renderInventory();
+            showMessage(`💰 Продано: ${seed.name} за ${sellPrice} монет`, 'success');
         }
         
         // Показ меню посадки
@@ -493,22 +767,31 @@
                 return;
             }
             
-            const seedOptions = gameState.inventory.map(item => 
-                `${item.emoji} ${item.name}`
-            ).join('\n');
+            currentPlotIndex = plotIndex;
+            document.getElementById('seed-modal-title').textContent = `Выберите семя для участка ${plotIndex + 1}`;
             
-            const seedIndex = prompt(
-                `Выберите семя для посадки на участок ${plotIndex + 1}:\n\n${seedOptions}\n\nВведите номер семени (1, 2, 3...):`
-            );
+            const seedOptions = document.getElementById('seed-options');
+            seedOptions.innerHTML = '';
             
-            if (seedIndex && !isNaN(seedIndex)) {
-                const index = parseInt(seedIndex) - 1;
-                if (index >= 0 && index < gameState.inventory.length) {
-                    plantSeed(plotIndex, index);
-                } else {
-                    showMessage('❌ Неверный номер семени', 'error');
-                }
-            }
+            gameState.inventory.forEach((item, index) => {
+                const seedDiv = document.createElement('div');
+                seedDiv.className = 'seed-option';
+                seedDiv.onclick = () => plantSeed(plotIndex, index);
+                seedDiv.innerHTML = `
+                    <div class="emoji">${item.emoji}</div>
+                    <div class="name">${item.name}</div>
+                    <div class="price">${item.price} 💰</div>
+                `;
+                seedOptions.appendChild(seedDiv);
+            });
+            
+            document.getElementById('seed-selection').classList.add('active');
+        }
+        
+        // Закрыть выбор семян
+        function closeSeedSelection() {
+            document.getElementById('seed-selection').classList.remove('active');
+            currentPlotIndex = null;
         }
         
         // Посадка семян
@@ -532,6 +815,8 @@
             
             updateStats();
             renderFarm();
+            renderInventory();
+            closeSeedSelection();
             showMessage(`✅ Посажено: ${seed.name}`, 'success');
         }
         
@@ -640,6 +925,13 @@
                 messageDiv.remove();
             }, 3000);
         }
+        
+        // Закрытие модального окна по клику вне его
+        document.getElementById('seed-selection').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSeedSelection();
+            }
+        });
         
         // Запуск игры при загрузке страницы
         document.addEventListener('DOMContentLoaded', () => {
