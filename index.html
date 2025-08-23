@@ -293,6 +293,32 @@
             margin: 10px 0;
         }
         
+        .save-info {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .save-info p {
+            font-size: clamp(12px, 2.5vw, 14px);
+            margin: 0;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: clamp(10px, 2vw, 12px);
+            margin: 0;
+            flex-shrink: 0;
+        }
+        
         .bottom-nav {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -523,6 +549,11 @@
             </div>
         </div>
         
+        <div class="save-info">
+            <p id="last-save-time">💾 Последнее сохранение: только что</p>
+            <button class="btn btn-small" onclick="resetProgress()">🔄 Сбросить прогресс</button>
+        </div>
+        
         <div class="weather">
             <h3>🌤️ Погода</h3>
             <p id="weather-info">☀️ Солнечно - +20% рост, +10% цены</p>
@@ -594,6 +625,7 @@
             money: 100,
             level: 1,
             experience: 0,
+            lastSaveTime: Date.now(),
             weather: {
                 type: 'sunny',
                 name: 'Солнечно',
@@ -649,13 +681,111 @@
         
         let currentPlotIndex = null;
         
+        // Система сохранения прогресса
+        const SAVE_KEY = 'farming_game_save';
+        const SAVE_INTERVAL = 10000; // Сохраняем каждые 10 секунд
+        
+        // Загрузка сохраненного прогресса
+        function loadGameProgress() {
+            try {
+                const savedData = localStorage.getItem(SAVE_KEY);
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    
+                    // Обновляем основные данные
+                    gameState.money = parsedData.money || 100;
+                    gameState.level = parsedData.level || 1;
+                    gameState.experience = parsedData.experience || 0;
+                    gameState.lastSaveTime = parsedData.lastSaveTime || Date.now();
+                    gameState.weather = parsedData.weather || gameState.weather;
+                    gameState.inventory = parsedData.inventory || [];
+                    
+                    // Восстанавливаем ферму с учетом оффлайн роста
+                    if (parsedData.farm && parsedData.farm.plots) {
+                        const currentTime = Date.now();
+                        
+                        parsedData.farm.plots.forEach((savedPlot, index) => {
+                            if (savedPlot.status === 'growing' && savedPlot.planted_at && savedPlot.growth_time) {
+                                const elapsed = currentTime - savedPlot.planted_at;
+                                const growthProgress = (elapsed / savedPlot.growth_time) * 100;
+                                
+                                if (growthProgress >= 100) {
+                                    // Растение выросло оффлайн
+                                    gameState.farm.plots[index] = {
+                                        ...savedPlot,
+                                        status: 'ready'
+                                    };
+                                } else {
+                                    // Растение все еще растет
+                                    gameState.farm.plots[index] = savedPlot;
+                                }
+                            } else {
+                                gameState.farm.plots[index] = savedPlot;
+                            }
+                        });
+                    }
+                    
+                    console.log('✅ Прогресс игры загружен');
+                    return true;
+                }
+            } catch (error) {
+                console.error('❌ Ошибка загрузки прогресса:', error);
+            }
+            return false;
+        }
+        
+        // Сохранение прогресса
+        function saveGameProgress() {
+            try {
+                gameState.lastSaveTime = Date.now();
+                const saveData = {
+                    ...gameState,
+                    saveTimestamp: Date.now()
+                };
+                localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+                console.log('💾 Прогресс игры сохранен');
+            } catch (error) {
+                console.error('❌ Ошибка сохранения прогресса:', error);
+            }
+        }
+        
+        // Автоматическое сохранение
+        function startAutoSave() {
+            setInterval(() => {
+                saveGameProgress();
+            }, SAVE_INTERVAL);
+        }
+        
+        // Сохранение при закрытии страницы
+        function setupPageUnloadSave() {
+            window.addEventListener('beforeunload', () => {
+                saveGameProgress();
+            });
+            
+            window.addEventListener('pagehide', () => {
+                saveGameProgress();
+            });
+        }
+        
         // Инициализация игры
         function initGame() {
+            // Загружаем сохраненный прогресс
+            const progressLoaded = loadGameProgress();
+            
+            if (progressLoaded) {
+                showMessage('✅ Прогресс игры загружен!', 'success');
+            }
+            
+            // Проверяем оффлайн рост растений
+            checkOfflineGrowth();
+            
             updateStats();
             renderFarm();
             renderShop();
             renderInventory();
             startGameLoop();
+            startAutoSave();
+            setupPageUnloadSave();
         }
         
         // Показать таб
@@ -780,6 +910,7 @@
                 updateStats();
                 renderShop();
                 renderInventory();
+                saveGameProgress(); // Автосохранение
                 showMessage(`✅ Куплено: ${seed.name}`, 'success');
             } else {
                 showMessage('❌ Недостаточно денег!', 'error');
@@ -796,6 +927,7 @@
             
             updateStats();
             renderInventory();
+            saveGameProgress(); // Автосохранение
             showMessage(`💰 Продано: ${seed.name} за ${sellPrice} монет`, 'success');
         }
         
@@ -856,6 +988,7 @@
             renderFarm();
             renderInventory();
             closeSeedSelection();
+            saveGameProgress(); // Автосохранение
             showMessage(`✅ Посажено: ${seed.name}`, 'success');
         }
         
@@ -899,6 +1032,7 @@
             
             updateStats();
             renderFarm();
+            saveGameProgress(); // Автосохранение
             showMessage(`💰 Собран урожай: ${plot.seed.name} за ${income} монет!`, 'success');
         }
         
@@ -928,6 +1062,9 @@
                     }
                 });
                 
+                // Обновляем время последнего сохранения каждые 5 секунд
+                updateLastSaveTime();
+                
                 // Меняем погоду каждые 30 секунд
                 if (Math.random() < 0.1) { // 10% шанс смены погоды
                     changeWeather();
@@ -948,6 +1085,30 @@
             updateStats();
         }
         
+        // Проверка оффлайн роста растений
+        function checkOfflineGrowth() {
+            const currentTime = Date.now();
+            let offlineHarvests = 0;
+            
+            gameState.farm.plots.forEach((plot, index) => {
+                if (plot.status === 'growing' && plot.planted_at && plot.growth_time) {
+                    const elapsed = currentTime - plot.planted_at;
+                    const growthProgress = (elapsed / plot.growth_time) * 100;
+                    
+                    if (growthProgress >= 100) {
+                        // Растение выросло оффлайн
+                        plot.status = 'ready';
+                        offlineHarvests++;
+                    }
+                }
+            });
+            
+            if (offlineHarvests > 0) {
+                showMessage(`🌱 ${offlineHarvests} растение(й) выросло пока вас не было!`, 'success');
+                renderFarm();
+            }
+        }
+        
         // Показать сообщение
         function showMessage(message, type = 'success') {
             const messageDiv = document.createElement('div');
@@ -963,6 +1124,36 @@
             setTimeout(() => {
                 messageDiv.remove();
             }, 3000);
+        }
+        
+        // Сброс прогресса
+        function resetProgress() {
+            if (confirm('⚠️ Вы уверены, что хотите сбросить весь прогресс? Это действие нельзя отменить!')) {
+                localStorage.removeItem(SAVE_KEY);
+                location.reload();
+            }
+        }
+        
+        // Обновление времени последнего сохранения
+        function updateLastSaveTime() {
+            const lastSaveElement = document.getElementById('last-save-time');
+            if (lastSaveElement) {
+                const timeDiff = Date.now() - gameState.lastSaveTime;
+                const seconds = Math.floor(timeDiff / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                
+                let timeText = '💾 Последнее сохранение: ';
+                if (seconds < 60) {
+                    timeText += 'только что';
+                } else if (minutes < 60) {
+                    timeText += `${minutes} мин назад`;
+                } else {
+                    timeText += `${hours} ч назад`;
+                }
+                
+                lastSaveElement.textContent = timeText;
+            }
         }
         
         // Закрытие модального окна по клику вне его
