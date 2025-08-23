@@ -16,21 +16,42 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: white;
+            overflow-x: hidden;
+        }
+        
+        .game-container {
+            max-width: 100vw;
+            min-height: 100vh;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
         
         .header {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
-            padding: 20px;
+            padding: 15px;
             text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .header h1 {
+            font-size: clamp(24px, 5vw, 32px);
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: clamp(14px, 3vw, 18px);
+            opacity: 0.9;
         }
         
         .stats {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 0;
         }
         
         .stat {
@@ -38,17 +59,52 @@
             padding: 15px;
             border-radius: 15px;
             text-align: center;
-            margin: 10px;
-            min-width: 120px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .stat h3 {
+            font-size: clamp(12px, 2.5vw, 16px);
+            margin-bottom: 5px;
+        }
+        
+        .stat p {
+            font-size: clamp(16px, 3vw, 20px);
+            font-weight: bold;
+        }
+        
+        .weather {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .weather h3 {
+            font-size: clamp(16px, 3vw, 20px);
+            margin-bottom: 10px;
+        }
+        
+        .farm-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .farm-section h3 {
+            font-size: clamp(18px, 4vw, 24px);
+            margin-bottom: 15px;
+            text-align: center;
         }
         
         .farm-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
+            max-width: 100%;
         }
         
         .plot {
@@ -86,21 +142,24 @@
             border-color: #FFD700;
         }
         
-        .shop {
+        .shop-section {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
-            margin: 20px auto;
-            max-width: 800px;
             border-radius: 20px;
-            padding: 20px;
+            padding: 15px;
             border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .shop-section h3 {
+            font-size: clamp(18px, 4vw, 24px);
+            margin-bottom: 15px;
+            text-align: center;
         }
         
         .shop-items {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 15px;
-            margin-top: 20px;
         }
         
         .shop-item {
@@ -109,6 +168,21 @@
             border-radius: 15px;
             text-align: center;
             border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .shop-item .emoji {
+            font-size: clamp(32px, 6vw, 48px);
+            margin-bottom: 10px;
+        }
+        
+        .shop-item h4 {
+            font-size: clamp(14px, 3vw, 18px);
+            margin-bottom: 8px;
+        }
+        
+        .shop-item p {
+            font-size: clamp(12px, 2.5vw, 14px);
+            margin-bottom: 5px;
         }
         
         .btn {
@@ -120,7 +194,8 @@
             cursor: pointer;
             transition: all 0.3s ease;
             margin: 5px;
-            font-size: 14px;
+            font-size: clamp(12px, 2.5vw, 14px);
+            width: 100%;
         }
         
         .btn:hover {
@@ -133,21 +208,19 @@
             cursor: not-allowed;
         }
         
-        .weather {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            margin: 20px auto;
-            max-width: 400px;
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.2);
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
         }
         
-        .loading {
-            text-align: center;
-            padding: 20px;
-            font-size: 18px;
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
         }
         
         .error {
@@ -155,127 +228,169 @@
             color: #ffcccc;
             padding: 15px;
             border-radius: 15px;
-            margin: 20px auto;
-            max-width: 600px;
             text-align: center;
+            margin: 10px 0;
         }
         
+        .success {
+            background: rgba(0, 255, 0, 0.2);
+            color: #ccffcc;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        /* Мобильная оптимизация */
         @media (max-width: 768px) {
+            .game-container {
+                padding: 5px;
+                gap: 10px;
+            }
+            
             .farm-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
-                padding: 10px;
             }
             
-            .stats {
-                flex-direction: column;
-                align-items: center;
+            .shop-items {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .plot {
+                min-height: 100px;
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .farm-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .shop-items {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🌾 Фермерская игра</h1>
-        <p>Выращивайте урожай и развивайте свою ферму!</p>
-    </div>
-    
-    <div class="stats">
-        <div class="stat">
-            <h3>💰 Монеты</h3>
-            <p id="money">0</p>
+    <div class="game-container">
+        <div class="header">
+            <h1>🌾 Фермерская игра</h1>
+            <p>Выращивайте урожай и развивайте свою ферму!</p>
         </div>
-        <div class="stat">
-            <h3>📊 Уровень</h3>
-            <p id="level">1</p>
+        
+        <div class="stats">
+            <div class="stat">
+                <h3>💰 Монеты</h3>
+                <p id="money">100</p>
+            </div>
+            <div class="stat">
+                <h3>📊 Уровень</h3>
+                <p id="level">1</p>
+            </div>
+            <div class="stat">
+                <h3>🌱 Опыт</h3>
+                <p id="experience">0</p>
+            </div>
         </div>
-        <div class="stat">
-            <h3>🌱 Опыт</h3>
-            <p id="experience">0</p>
+        
+        <div class="weather">
+            <h3>🌤️ Погода</h3>
+            <p id="weather-info">☀️ Солнечно - +20% рост, +10% цены</p>
         </div>
-    </div>
-    
-    <div class="weather">
-        <h3>🌤️ Погода</h3>
-        <p id="weather-info">Загрузка...</p>
-    </div>
-    
-    <div class="farm-grid" id="farm-grid">
-        <div class="loading">⏳ Загрузка фермы...</div>
-    </div>
-    
-    <div class="shop">
-        <h3>🛒 Магазин семян</h3>
-        <div class="shop-items" id="shop-items">
-            <div class="loading">⏳ Загрузка магазина...</div>
+        
+        <div class="farm-section">
+            <h3>🌱 Ферма</h3>
+            <div class="farm-grid" id="farm-grid">
+                <!-- Ферма будет создана JavaScript -->
+            </div>
+        </div>
+        
+        <div class="shop-section">
+            <h3>🛒 Магазин семян</h3>
+            <div class="shop-items" id="shop-items">
+                <!-- Магазин будет создан JavaScript -->
+            </div>
         </div>
     </div>
     
     <script>
-        let currentUser = null;
-        let farmData = null;
-        let shopData = null;
+        // Игровые данные
+        let gameState = {
+            money: 100,
+            level: 1,
+            experience: 0,
+            weather: {
+                type: 'sunny',
+                name: 'Солнечно',
+                emoji: '☀️',
+                effect_description: '+20% рост, +10% цены'
+            },
+            farm: {
+                plots: [
+                    { id: 0, status: 'empty', seed: null, planted_at: null, growth_time: null },
+                    { id: 1, status: 'empty', seed: null, planted_at: null, growth_time: null },
+                    { id: 2, status: 'empty', seed: null, planted_at: null, growth_time: null }
+                ]
+            },
+            shop: [
+                {
+                    type: 'carrot',
+                    name: 'Морковь',
+                    emoji: '🥕',
+                    price: 10,
+                    growth_time: 60
+                },
+                {
+                    type: 'tomato',
+                    name: 'Помидор',
+                    emoji: '🍅',
+                    price: 25,
+                    growth_time: 120
+                },
+                {
+                    type: 'potato',
+                    name: 'Картошка',
+                    emoji: '🥔',
+                    price: 15,
+                    growth_time: 90
+                },
+                {
+                    type: 'cucumber',
+                    name: 'Огурец',
+                    emoji: '🥒',
+                    price: 20,
+                    growth_time: 75
+                },
+                {
+                    type: 'strawberry',
+                    name: 'Клубника',
+                    emoji: '🍓',
+                    price: 50,
+                    growth_time: 180
+                }
+            ],
+            inventory: []
+        };
         
         // Инициализация игры
-        async function initGame() {
-            try {
-                // Получаем user_id из URL параметров или создаем случайный
-                const urlParams = new URLSearchParams(window.location.search);
-                let userId = urlParams.get('user_id');
-                
-                if (!userId) {
-                    userId = 'browser_' + Math.random().toString(36).substr(2, 9);
-                }
-                
-                // Инициализируем пользователя
-                const response = await fetch('/api/init', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        username: 'Игрок'
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    currentUser = data.player;
-                    updateStats();
-                    loadFarm();
-                    loadShop();
-                    loadWeather();
-                } else {
-                    throw new Error('Ошибка инициализации');
-                }
-            } catch (error) {
-                console.error('Ошибка инициализации:', error);
-                showError('Ошибка загрузки игры. Попробуйте обновить страницу.');
-            }
+        function initGame() {
+            updateStats();
+            renderFarm();
+            renderShop();
+            startGameLoop();
         }
         
         // Обновление статистики
         function updateStats() {
-            if (currentUser) {
-                document.getElementById('money').textContent = currentUser.money;
-                document.getElementById('level').textContent = currentUser.level;
-                document.getElementById('experience').textContent = currentUser.experience || 0;
-            }
-        }
-        
-        // Загрузка фермы
-        async function loadFarm() {
-            try {
-                const response = await fetch(`/api/farm?user_id=${currentUser.id}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    farmData = data.farm;
-                    renderFarm();
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки фермы:', error);
-            }
+            document.getElementById('money').textContent = gameState.money;
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('experience').textContent = gameState.experience;
+            document.getElementById('weather-info').innerHTML = 
+                `${gameState.weather.emoji} ${gameState.weather.name} - ${gameState.weather.effect_description}`;
         }
         
         // Отрисовка фермы
@@ -283,12 +398,7 @@
             const farmGrid = document.getElementById('farm-grid');
             farmGrid.innerHTML = '';
             
-            if (!farmData || !farmData.plots) {
-                farmGrid.innerHTML = '<div class="error">Ошибка загрузки фермы</div>';
-                return;
-            }
-            
-            farmData.plots.forEach((plot, index) => {
+            gameState.farm.plots.forEach((plot, index) => {
                 const plotDiv = document.createElement('div');
                 plotDiv.className = `plot ${plot.status}`;
                 
@@ -299,10 +409,10 @@
                         <button class="btn" onclick="showPlantMenu(${index})">Посадить</button>
                     `;
                 } else if (plot.status === 'growing') {
-                    const progress = Math.min(100, (Date.now() - plot.planted_at) / (plot.growth_time * 1000) * 100);
+                    const progress = calculateGrowthProgress(plot);
                     plotDiv.innerHTML = `
-                        <div>${plot.seed_emoji}</div>
-                        <div>${plot.seed_name}</div>
+                        <div>${plot.seed.emoji}</div>
+                        <div>${plot.seed.name}</div>
                         <div>Растет: ${Math.round(progress)}%</div>
                         <div class="progress-bar">
                             <div class="progress" style="width: ${progress}%"></div>
@@ -310,8 +420,8 @@
                     `;
                 } else if (plot.status === 'ready') {
                     plotDiv.innerHTML = `
-                        <div>${plot.seed_emoji}</div>
-                        <div>${plot.seed_name}</div>
+                        <div>${plot.seed.emoji}</div>
+                        <div>${plot.seed.name}</div>
                         <div>Готов к сбору!</div>
                         <button class="btn" onclick="harvestPlot(${index})">Собрать</button>
                     `;
@@ -321,40 +431,21 @@
             });
         }
         
-        // Загрузка магазина
-        async function loadShop() {
-            try {
-                const response = await fetch('/api/shop');
-                if (response.ok) {
-                    const data = await response.json();
-                    shopData = data.items;
-                    renderShop();
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки магазина:', error);
-            }
-        }
-        
         // Отрисовка магазина
         function renderShop() {
             const shopItems = document.getElementById('shop-items');
             shopItems.innerHTML = '';
             
-            if (!shopData || shopData.length === 0) {
-                shopItems.innerHTML = '<div class="error">Магазин пуст</div>';
-                return;
-            }
-            
-            shopData.forEach(item => {
+            gameState.shop.forEach(item => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'shop-item';
                 itemDiv.innerHTML = `
-                    <div style="font-size: 48px;">${item.emoji}</div>
+                    <div class="emoji">${item.emoji}</div>
                     <h4>${item.name}</h4>
                     <p>Цена: ${item.price} 💰</p>
                     <p>Время роста: ${item.growth_time} сек</p>
                     <button class="btn" onclick="buySeed('${item.type}')" 
-                            ${currentUser.money < item.price ? 'disabled' : ''}>
+                            ${gameState.money < item.price ? 'disabled' : ''}>
                         Купить за ${item.price} 💰
                     </button>
                 `;
@@ -362,167 +453,176 @@
             });
         }
         
-        // Загрузка погоды
-        async function loadWeather() {
-            try {
-                const response = await fetch(`/api/farm?user_id=${currentUser.id}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    const weatherInfo = data.weather;
-                    document.getElementById('weather-info').innerHTML = `
-                        ${weatherInfo.emoji} ${weatherInfo.name}<br>
-                        <small>Влияние: ${weatherInfo.effect_description}</small>
-                    `;
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки погоды:', error);
-            }
-        }
-        
         // Покупка семян
-        async function buySeed(seedType) {
-            try {
-                const response = await fetch('/api/buy', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user_id: currentUser.id,
-                        seed_type: seedType
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        alert(data.message);
-                        // Обновляем данные
-                        loadShop();
-                        updateStats();
-                    } else {
-                        alert('Ошибка: ' + data.message);
-                    }
-                }
-            } catch (error) {
-                console.error('Ошибка покупки семян:', error);
-                alert('Ошибка покупки семян');
+        function buySeed(seedType) {
+            const seed = gameState.shop.find(s => s.type === seedType);
+            if (!seed) return;
+            
+            if (gameState.money >= seed.price) {
+                gameState.money -= seed.price;
+                gameState.inventory.push({ ...seed, id: Date.now() });
+                updateStats();
+                renderShop();
+                showMessage(`✅ Куплено: ${seed.name}`, 'success');
+            } else {
+                showMessage('❌ Недостаточно денег!', 'error');
             }
         }
         
         // Показ меню посадки
         function showPlantMenu(plotIndex) {
-            if (!shopData || shopData.length === 0) {
-                alert('Нет доступных семян для посадки');
+            if (gameState.inventory.length === 0) {
+                showMessage('❌ Нет доступных семян для посадки', 'error');
                 return;
             }
             
-            const seedOptions = shopData.map(item => 
-                `${item.emoji} ${item.name} (${item.price} 💰)`
+            const seedOptions = gameState.inventory.map(item => 
+                `${item.emoji} ${item.name}`
             ).join('\n');
             
-            const seedType = prompt(
-                `Выберите семя для посадки на участок ${plotIndex + 1}:\n\n${seedOptions}\n\nВведите название семени:`
+            const seedIndex = prompt(
+                `Выберите семя для посадки на участок ${plotIndex + 1}:\n\n${seedOptions}\n\nВведите номер семени (1, 2, 3...):`
             );
             
-            if (seedType) {
-                const selectedSeed = shopData.find(item => 
-                    item.name.toLowerCase().includes(seedType.toLowerCase()) ||
-                    item.type === seedType
-                );
-                
-                if (selectedSeed) {
-                    plantSeed(plotIndex, selectedSeed.type);
+            if (seedIndex && !isNaN(seedIndex)) {
+                const index = parseInt(seedIndex) - 1;
+                if (index >= 0 && index < gameState.inventory.length) {
+                    plantSeed(plotIndex, index);
                 } else {
-                    alert('Семя не найдено. Попробуйте еще раз.');
+                    showMessage('❌ Неверный номер семени', 'error');
                 }
             }
         }
         
         // Посадка семян
-        async function plantSeed(plotIndex, seedType) {
-            try {
-                const response = await fetch('/api/plant', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user_id: currentUser.id,
-                        plot_id: plotIndex,
-                        seed_type: seedType
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        alert(data.message);
-                        // Обновляем данные
-                        loadFarm();
-                        loadShop();
-                        updateStats();
-                    } else {
-                        alert('Ошибка: ' + data.message);
-                    }
-                }
-            } catch (error) {
-                console.error('Ошибка посадки семян:', error);
-                alert('Ошибка посадки семян');
+        function plantSeed(plotIndex, inventoryIndex) {
+            const seed = gameState.inventory[inventoryIndex];
+            const plot = gameState.farm.plots[plotIndex];
+            
+            if (plot.status !== 'empty') {
+                showMessage('❌ Участок уже занят', 'error');
+                return;
             }
+            
+            // Удаляем семя из инвентаря
+            gameState.inventory.splice(inventoryIndex, 1);
+            
+            // Сажаем семя
+            plot.status = 'growing';
+            plot.seed = seed;
+            plot.planted_at = Date.now();
+            plot.growth_time = seed.growth_time * 1000; // в миллисекундах
+            
+            updateStats();
+            renderFarm();
+            showMessage(`✅ Посажено: ${seed.name}`, 'success');
         }
         
         // Сбор урожая
-        async function harvestPlot(plotIndex) {
-            try {
-                const response = await fetch('/api/harvest', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user_id: currentUser.id,
-                        plot_id: plotIndex
-                    })
+        function harvestPlot(plotIndex) {
+            const plot = gameState.farm.plots[plotIndex];
+            
+            if (plot.status !== 'ready') {
+                showMessage('❌ Урожай еще не готов', 'error');
+                return;
+            }
+            
+            // Рассчитываем доход с учетом погоды
+            let basePrice = plot.seed.price;
+            let multiplier = 1;
+            
+            if (gameState.weather.type === 'sunny') {
+                multiplier = 1.1; // +10% цены
+            } else if (gameState.weather.type === 'rainy') {
+                multiplier = 1.3; // +30% цены
+            } else if (gameState.weather.type === 'stormy') {
+                multiplier = 0.9; // -10% цены
+            }
+            
+            const income = Math.round(basePrice * multiplier);
+            gameState.money += income;
+            gameState.experience += 10;
+            
+            // Проверяем повышение уровня
+            if (gameState.experience >= gameState.level * 100) {
+                gameState.level++;
+                gameState.experience = 0;
+                showMessage(`🎉 Уровень повышен до ${gameState.level}!`, 'success');
+            }
+            
+            // Очищаем участок
+            plot.status = 'empty';
+            plot.seed = null;
+            plot.planted_at = null;
+            plot.growth_time = null;
+            
+            updateStats();
+            renderFarm();
+            showMessage(`💰 Собран урожай: ${plot.seed.name} за ${income} монет!`, 'success');
+        }
+        
+        // Расчет прогресса роста
+        function calculateGrowthProgress(plot) {
+            if (!plot.planted_at || !plot.growth_time) return 0;
+            
+            const elapsed = Date.now() - plot.planted_at;
+            const progress = Math.min(100, (elapsed / plot.growth_time) * 100);
+            
+            // Проверяем, готов ли урожай
+            if (progress >= 100 && plot.status === 'growing') {
+                plot.status = 'ready';
+                renderFarm();
+            }
+            
+            return progress;
+        }
+        
+        // Игровой цикл
+        function startGameLoop() {
+            setInterval(() => {
+                // Обновляем ферму каждую секунду
+                gameState.farm.plots.forEach(plot => {
+                    if (plot.status === 'growing') {
+                        calculateGrowthProgress(plot);
+                    }
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        alert(data.message);
-                        // Обновляем данные
-                        loadFarm();
-                        loadShop();
-                        updateStats();
-                    } else {
-                        alert('Ошибка: ' + data.message);
-                    }
+                // Меняем погоду каждые 30 секунд
+                if (Math.random() < 0.1) { // 10% шанс смены погоды
+                    changeWeather();
                 }
-            } catch (error) {
-                console.error('Ошибка сбора урожая:', error);
-                alert('Ошибка сбора урожая');
-            }
+            }, 1000);
         }
         
-        // Показать ошибку
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.textContent = message;
-            document.body.insertBefore(errorDiv, document.body.firstChild);
+        // Смена погоды
+        function changeWeather() {
+            const weathers = [
+                { type: 'sunny', name: 'Солнечно', emoji: '☀️', effect_description: '+20% рост, +10% цены' },
+                { type: 'cloudy', name: 'Облачно', emoji: '☁️', effect_description: 'Обычные показатели' },
+                { type: 'rainy', name: 'Дождливо', emoji: '🌧️', effect_description: '+50% рост, +30% цены' },
+                { type: 'stormy', name: 'Гроза', emoji: '⛈️', effect_description: '-20% рост, -10% цены' }
+            ];
+            
+            gameState.weather = weathers[Math.floor(Math.random() * weathers.length)];
+            updateStats();
+        }
+        
+        // Показать сообщение
+        function showMessage(message, type = 'success') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            // Удаляем предыдущие сообщения
+            const existingMessages = document.querySelectorAll('.success, .error');
+            existingMessages.forEach(msg => msg.remove());
+            
+            document.body.insertBefore(messageDiv, document.body.firstChild);
             
             setTimeout(() => {
-                errorDiv.remove();
-            }, 5000);
+                messageDiv.remove();
+            }, 3000);
         }
-        
-        // Автообновление каждые 5 секунд
-        setInterval(() => {
-            if (currentUser) {
-                loadFarm();
-                loadWeather();
-            }
-        }, 5000);
         
         // Запуск игры при загрузке страницы
         document.addEventListener('DOMContentLoaded', initGame);
