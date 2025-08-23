@@ -10,6 +10,10 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         
         body {
@@ -20,6 +24,10 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         
         .game-container {
@@ -120,12 +128,15 @@
             padding: 15px;
             border: 1px solid rgba(255,255,255,0.2);
             height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         .farm-section h3 {
             font-size: clamp(16px, 3vw, 20px);
             margin-bottom: 15px;
             text-align: center;
+            flex-shrink: 0;
         }
         
         .farm-grid {
@@ -133,6 +144,8 @@
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 15px;
             max-width: 100%;
+            flex: 1;
+            align-content: start;
         }
         
         .plot {
@@ -177,18 +190,25 @@
             padding: 15px;
             border: 1px solid rgba(255,255,255,0.2);
             height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         .shop-section h3 {
             font-size: clamp(16px, 3vw, 20px);
             margin-bottom: 15px;
             text-align: center;
+            flex-shrink: 0;
         }
         
         .shop-items {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 15px;
+            flex: 1;
+            align-content: start;
+            overflow-y: auto;
+            padding-right: 5px;
         }
         
         .shop-item {
@@ -225,6 +245,10 @@
             margin: 3px;
             font-size: clamp(10px, 2vw, 12px);
             width: 100%;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         
         .btn:hover {
@@ -296,6 +320,10 @@
             flex-direction: column;
             align-items: center;
             gap: 5px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         
         .nav-btn:hover {
@@ -364,6 +392,10 @@
             border: 1px solid rgba(255,255,255,0.3);
             cursor: pointer;
             transition: all 0.3s ease;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         
         .seed-option:hover {
@@ -398,6 +430,29 @@
             border-radius: 50%;
             cursor: pointer;
             font-size: 18px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Стилизация скроллбара */
+        .shop-items::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .shop-items::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+        
+        .shop-items::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+        
+        .shop-items::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
         }
         
         /* Мобильная оптимизация */
