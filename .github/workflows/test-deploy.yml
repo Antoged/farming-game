@@ -1,8 +1,6 @@
-name: Deploy to GitHub Pages
+name: Test Deploy
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -10,16 +8,9 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  deploy:
+  test-deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,7 +26,7 @@ jobs:
           cp README.md docs/
           cp CNAME docs/
           touch docs/.nojekyll
-          echo "✅ Сайт собран"
+          echo "✅ Тестовый сайт собран"
           ls -la docs/
           
       - name: Upload artifact
@@ -44,5 +35,4 @@ jobs:
           path: ./docs
           
       - name: Deploy
-        id: deployment
         uses: actions/deploy-pages@v4
