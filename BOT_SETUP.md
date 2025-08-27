@@ -15,7 +15,7 @@
 
 ```env
 # Telegram Bot Token (замените на ваш токен)
-BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
+BOT_TOKEN=your_telegram_bot_token_here
 
 # URL веб-приложения (GitHub Pages)
 WEBAPP_URL=https://antoged.github.io/farming-game/
